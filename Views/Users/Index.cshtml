@@ -1,0 +1,46 @@
+﻿@model List<FoodOrdering.DTOs.UserDTO>
+
+<h2>User List</h2>
+
+<a asp-action="Create" class="btn btn-success mb-3">
+    Add User
+</a>
+
+<table class="table table-bordered">
+
+    <tr>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Action</th>
+    </tr>
+
+    @foreach (var u in Model)
+    {
+        <tr>
+            <td>@u.Username</td>
+            <td>@u.Role</td>
+            <td>
+
+                <a asp-action="Details"
+                       asp-route-id="@u.Id"
+                       class="btn btn-info btn-sm">
+                    Details
+                </a>
+
+                <a asp-action="Edit"
+                       asp-route-id="@u.Id"
+                       class="btn btn-warning btn-sm">
+                    Edit
+                </a>
+
+                <a asp-action="Delete"
+                       asp-route-id="@u.Id"
+                       class="btn btn-danger btn-sm">
+                    Delete
+                </a>
+
+            </td>
+        </tr>
+    }
+
+</table>

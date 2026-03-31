@@ -53,3 +53,72 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+############################
+# Build results
+############################
+bin/
+obj/
+Debug/
+Release/
+
+############################
+# User specific files
+############################
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+############################
+# Visual Studio
+############################
+.vs/
+*.VC.db
+*.VC.opendb
+
+############################
+# Rider / VS Code
+############################
+.idea/
+.vscode/
+
+############################
+# Logs
+############################
+*.log
+
+############################
+# OS files
+############################
+.DS_Store
+Thumbs.db
+
+############################
+# Environment files
+############################
+appsettings.Development.json
+.env
+
+############################
+# Database local
+############################
+*.mdf
+*.ldf
+App_Data/*.db
+
+############################
+# Node modules (nếu có)
+############################
+node_modules/
+
+############################
+# Publish folder
+############################
+publish/
+wwwroot/dist/
+
+############################
+# Secrets
+############################
+secrets.json

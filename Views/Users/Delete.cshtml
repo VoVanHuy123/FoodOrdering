@@ -1,0 +1,19 @@
+﻿@model FoodOrdering.DTOs.UserDTO
+
+<h2>Delete User</h2>
+
+<div class="alert alert-danger">
+    Are you sure you want to delete this user?
+</div>
+
+<div>
+    <b>Username:</b> @Model.Username <br />
+    <b>Role:</b> @Model.Role
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <button class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
