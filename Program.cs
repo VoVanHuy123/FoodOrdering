@@ -1,7 +1,8 @@
 using FoodOrdering.App_Start;
 using FoodOrdering.Context;
-using Microsoft.EntityFrameworkCore;
 using FoodOrdering.Extentions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,18 @@ builder.Services.AddDbContext<FoodOrderingContext>(options =>
 builder.Services.AddApplicationServices();
 builder.Services.AddSession();
 
+// ===== Add Swagger =====
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Food Ordering API",
+        Version = "v1",
+        Description = "API Managerment Orders, MenuItems, Tables..."
+    });
+});
+
 
 var app = builder.Build();
 
@@ -25,6 +38,17 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+// ===== Enable Swagger =====
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Food Ordering API v1");
+            c.RoutePrefix = "apis"; // mở swagger ở trang gốc: http://localhost:5000/
+        });
+    }
 
 app.UseHttpsRedirection();
 app.UseRouting();
