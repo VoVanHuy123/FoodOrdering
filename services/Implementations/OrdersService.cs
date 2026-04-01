@@ -1,7 +1,9 @@
 ﻿using FoodOrdering.Context;
 using FoodOrdering.DTOs;
+using FoodOrdering.Hubs;
 using FoodOrdering.Models;
 using FoodOrdering.services.Interfaces;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrdering.services.Implementations
@@ -9,10 +11,14 @@ namespace FoodOrdering.services.Implementations
     public class OrdersService : IOrdersService
     {
         private readonly FoodOrderingContext _context;
+        private readonly IHubContext<OrderHub> _hub;
 
-        public OrdersService(FoodOrderingContext context)
+        public OrdersService(
+            FoodOrderingContext context,
+            IHubContext<OrderHub> hub)
         {
             _context = context;
+            _hub = hub;
         }
 
         // ================= GET ALL =================
@@ -88,7 +94,6 @@ namespace FoodOrdering.services.Implementations
                 }).ToList() ?? new List<OrderItems>()
             };
 
-            // Tính TotalAmount
             order.TotalAmount = order.OrderItems.Sum(i => i.Price * i.Quantity);
 
             _context.Orders.Add(order);
@@ -97,6 +102,17 @@ namespace FoodOrdering.services.Implementations
             dto.Id = order.Id;
             dto.OrderTime = order.OrderTime;
             dto.TotalAmount = order.TotalAmount;
+
+            
+            // SIGNALR REALTIME
+            await _hub.Clients.All.SendAsync("ReceiveNewOrder", new
+            {
+                order.Id,
+                order.TableId,
+                order.Status,
+                order.TotalAmount,
+                order.OrderTime
+            });
 
             return dto;
         }
@@ -129,6 +145,12 @@ namespace FoodOrdering.services.Implementations
             order.TotalAmount = order.OrderItems.Sum(i => i.Price * i.Quantity);
 
             await _context.SaveChangesAsync();
+            await _hub.Clients.All.SendAsync("OrderUpdated", new
+            {
+                order.Id,
+                order.Status,
+                order.TotalAmount
+            });
             return true;
         }
 
