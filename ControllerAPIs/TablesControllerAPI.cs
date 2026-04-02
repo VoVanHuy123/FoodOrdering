@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrdering.ControllerAPIs.API
 {
-    [Route("api/[controller]")]
+    [Route("api/tables")]
     [ApiController]
     public class TablesControllerAPI : Controller
     {

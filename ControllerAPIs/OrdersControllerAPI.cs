@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FoodOrdering.ControllerAPIs
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/orders")]
     public class OrdersControllerAPI : ControllerBase
     {
         private readonly IOrdersService _ordersService;
@@ -38,11 +38,25 @@ namespace FoodOrdering.ControllerAPIs
         [HttpPost]
         public async Task<ActionResult<OrderDTO>> Create([FromBody] OrderDTO dto)
         {
-            if (dto == null)
-                return BadRequest("Order data is null.");
+            try
+            {
 
-            var createdOrder = await _ordersService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = createdOrder.Id }, createdOrder);
+                if (dto == null)
+                    return BadRequest("Order data is null.");
+
+                var createdOrder = await _ordersService.CreateAsync(dto);
+
+                return CreatedAtAction(nameof(GetById),
+                    new { id = createdOrder.Id },
+                    createdOrder);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
         }
 
         // ================= UPDATE =================

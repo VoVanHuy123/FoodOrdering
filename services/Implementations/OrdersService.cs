@@ -79,6 +79,11 @@ namespace FoodOrdering.services.Implementations
         // ================= CREATE =================
         public async Task<OrderDTO> CreateAsync(OrderDTO dto)
         {
+            var tableExists = await _context.Tables.AnyAsync(t => t.Id == dto.TableId);
+            if (!tableExists)
+            {
+                throw new Exception("TableId không tồn tại");
+            }
             var order = new Orders
             {
                 TableId = dto.TableId,

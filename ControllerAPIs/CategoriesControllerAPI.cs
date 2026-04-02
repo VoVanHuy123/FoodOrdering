@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrdering.ControllerAPIs.API
 {
-    [Route("api/[controller]")]
+    [Route("api/categories")]
     [ApiController]
     public class CategoriesControllerAPI : Controller
     {

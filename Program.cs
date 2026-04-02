@@ -29,6 +29,17 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API Managerment Orders, MenuItems, Tables..."
     });
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 
 
 var app = builder.Build();
@@ -51,19 +62,18 @@ if (app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-//if (!app.Environment.IsDevelopment())
-//{
-//    app.UseExceptionHandler("/Home/Error");
-//    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-//    app.UseHsts();
-//}
-
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseRouting();
-
 app.UseAuthorization();
+app.MapControllers();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapHub<OrderHub>("/orderHub");
-RouteConfig.RegisterRoutes(app);
+//RouteConfig.RegisterRoutes(app);
 app.MapStaticAssets();
 
 app.UseSession();
