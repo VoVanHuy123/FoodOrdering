@@ -14,17 +14,64 @@ public class MenuItemsService : IMenuItemsService
     }
 
     // ================= GET ALL =================
-    public async Task<List<MenuItemDTO>> GetAllAsync()
+    public async Task<List<MenuItemDTO>> GetAllAsync() 
+    { 
+        return await _context.MenuItems.Select(x => new MenuItemDTO 
+        { 
+            Id = x.Id,
+            Name = x.Name,
+            Price = x.Price, 
+            CategoryId = x.CategoryId 
+        }).ToListAsync(); 
+    }
+    public async Task<PagedResult<MenuItemDTO>> GetAllAsync(MenuItemQueryDTO query)
     {
-        return await _context.MenuItems
+        var menuQuery = _context.MenuItems
+            .Include(x => x.Category)
+            .AsQueryable();
+
+        // ===== SEARCH NAME =====
+        if (!string.IsNullOrEmpty(query.Search))
+        {
+            menuQuery = menuQuery
+                .Where(x => x.Name!.Contains(query.Search));
+        }
+
+        // ===== FILTER CATEGORY =====
+        if (query.CategoryId.HasValue)
+        {
+            menuQuery = menuQuery
+                .Where(x => x.CategoryId == query.CategoryId.Value);
+        }
+
+        // ===== TOTAL COUNT =====
+        var totalItems = await menuQuery.CountAsync();
+
+        // ===== PAGINATION =====
+        var items = await menuQuery
+            .OrderByDescending(x => x.Id)
+            .Skip((query.PageNumber - 1) * query.PageSize)
+            .Take(query.PageSize)
             .Select(x => new MenuItemDTO
             {
                 Id = x.Id,
                 Name = x.Name,
+                Description = x.Description,
                 Price = x.Price,
-                CategoryId = x.CategoryId
+                ImageUrl = x.ImageUrl,
+                CategoryId = x.CategoryId,
+                CategoryName = x.Category!.Name,
+                IsAvailable = x.IsAvailable
             })
             .ToListAsync();
+
+        return new PagedResult<MenuItemDTO>
+        {
+            TotalItems = totalItems,
+            PageNumber = query.PageNumber,
+            PageSize = query.PageSize,
+            Items = items
+        };
     }
 
     // ================= GET BY ID =================

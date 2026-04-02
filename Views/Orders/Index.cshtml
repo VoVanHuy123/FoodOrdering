@@ -1,0 +1,49 @@
+﻿@model IEnumerable<FoodOrdering.DTOs.OrderDTO>
+
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<h1>Orders</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Table</th>
+            <th>Order Time</th>
+            <th>Status</th>
+            <th>Total Amount</th>
+            <th>Note</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody id="orders">
+        @foreach (var item in Model)
+        {
+            <tr id="order-@item.Id">
+                <td>@item.TableId</td>
+
+                <td>
+                    @item.OrderTime.ToString("dd/MM/yyyy HH:mm")
+                </td>
+
+                <td>@item.Status</td>
+
+                <td>@item.TotalAmount.ToString("N0") VNĐ</td>
+
+                <td>@item.Note</td>
+
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

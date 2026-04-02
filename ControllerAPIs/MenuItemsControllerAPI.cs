@@ -1,9 +1,10 @@
-﻿using FoodOrdering.services.Interfaces;
+﻿using FoodOrdering.DTOs;
+using FoodOrdering.services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrdering.ControllerAPIs.API
 {
-    [Route("api/[controller]")]
+    [Route("api/menu_items")]
     [ApiController]
     public class MenuItemsControllerAPI : Controller
     {
@@ -21,10 +22,10 @@ namespace FoodOrdering.ControllerAPIs.API
         // GET ALL MENU
         // =====================
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] MenuItemQueryDTO query)
         {
-            var menus = await _menuService.GetAllAsync();
-            return Ok(menus);
+            var result = await _menuService.GetAllAsync(query);
+            return Ok(result);
         }
         // =====================
         // GET BY ID

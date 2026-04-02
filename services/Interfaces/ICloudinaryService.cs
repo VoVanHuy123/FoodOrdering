@@ -2,6 +2,8 @@
 {
     public interface ICloudinaryService
     {
-        Task<string> UploadImageAsync(IFormFile file);
+        byte[] GenerateQRCode(string url);
+        Task<string> UploadQR(byte[] imageBytes);
+         Task<string> UploadImageAsync(IFormFile file);
     }
 }
