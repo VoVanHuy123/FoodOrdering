@@ -1,22 +1,59 @@
+using DotNetEnv;
 using FoodOrdering.App_Start;
 using FoodOrdering.Context;
 using FoodOrdering.Extentions;
 using FoodOrdering.Hubs;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using FoodOrdering.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Env.Load(); // đọc biến từ file .env
+
+var defaultConnection = Environment.GetEnvironmentVariable("DefaultConnection");
+var cloudName = Environment.GetEnvironmentVariable("CloudName");
+var cloudApiKey = Environment.GetEnvironmentVariable("CloudApiKey");
+var cloudApiSecret = Environment.GetEnvironmentVariable("CloudApiSecret");
+var appUrl = Environment.GetEnvironmentVariable("AppUrl");
+
+// DbContext
+builder.Services.AddDbContext<FoodOrderingContext>(options =>
+    options.UseSqlServer(defaultConnection)
+);
+
+// CloudinarySettings
+builder.Services.Configure<CloudinarySettings>(options =>
+{
+    options.CloudName = cloudName;
+    options.ApiKey = cloudApiKey;
+    options.ApiSecret = cloudApiSecret;
+});
+
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
-builder.Services.AddDbContext<FoodOrderingContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    ));
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplicationServices();
 builder.Services.AddSession();
 builder.Services.AddSignalR();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";     
+        options.AccessDeniedPath = "/Auth/AccessDenied";
+    });
+builder.Services.AddControllersWithViews(options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+
+    options.Filters.Add(new AuthorizeFilter(policy));
+});
 
 // ===== Add Swagger =====
 builder.Services.AddEndpointsApiExplorer();
@@ -61,11 +98,19 @@ if (app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseSession();
 
 app.UseCors("AllowAll");
-app.UseHttpsRedirection();
-app.UseRouting();
-app.UseAuthorization();
+
+app.UseAuthentication();   // ✅ SAU Routing
+app.UseAuthorization();    // ✅ SAU Authentication
+
 app.MapControllers();
 
 app.MapControllerRoute(

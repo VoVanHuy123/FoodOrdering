@@ -120,7 +120,7 @@ namespace FoodOrdering.services.Implementations
                 return null;
 
             bool isValid =
-                BCrypt.Net.BCrypt.Verify(password, user.Password);
+                BCrypt.Net.BCrypt.Verify(password.Trim(), user.Password);
 
             if (!isValid)
                 return null;

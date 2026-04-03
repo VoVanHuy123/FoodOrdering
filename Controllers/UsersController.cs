@@ -1,9 +1,11 @@
 ﻿using FoodOrdering.DTOs;
 using FoodOrdering.services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrdering.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class UsersController : Controller
     {
         private readonly IUsersService _userService;
@@ -117,38 +119,6 @@ namespace FoodOrdering.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // =====================
-        // LOGIN
-        // =====================
-        public IActionResult Login()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Login(LoginDTO dto)
-        {
-            var user = await _userService.LoginAsync(
-                dto.Username,
-                dto.Password);
-
-            if (user == null)
-            {
-                ViewBag.Error = "Sai tài khoản hoặc mật khẩu";
-                return View();
-            }
-
-            // lưu session
-            HttpContext.Session.SetString("username", user.Username);
-            HttpContext.Session.SetString("role", user.Role);
-
-            return RedirectToAction("Index");
-        }
-
-        public IActionResult Logout()
-        {
-            HttpContext.Session.Clear();
-            return RedirectToAction("Login");
-        }
+    
     }
 }

@@ -1,4 +1,4 @@
-﻿@model FoodOrdering.Models.Orders
+﻿@* @model FoodOrdering.Models.Orders
 
 @{
     ViewData["Title"] = "Create";
@@ -49,4 +49,135 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} *@
+@model FoodOrdering.DTOs.OrderEditDTO
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Create New Order</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Chọn bàn -->
+                <div class="mb-3">
+                    <label asp-for="TableId" class="form-label">Table</label>
+                    <select asp-for="TableId" class="form-select" asp-items="ViewBag.TableId">
+                        <option value="">-- Select Table --</option>
+                    </select>
+                    <span asp-validation-for="TableId" class="text-danger"></span>
+                </div>
+
+                <!-- Thời gian đặt -->
+                <div class="mb-3">
+                    <label asp-for="OrderTime" class="form-label">Order Time</label>
+                    <input asp-for="OrderTime" type="datetime-local" class="form-control" />
+                    <span asp-validation-for="OrderTime" class="text-danger"></span>
+                </div>
+
+                <!-- Trạng thái -->
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label">Status</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+
+                <!-- Ghi chú -->
+                <div class="mb-3">
+                    <label asp-for="Note" class="form-label">Note</label>
+                    <textarea asp-for="Note" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Note" class="text-danger"></span>
+                </div>
+
+                <hr />
+
+                <h5>Order Items</h5>
+
+                <div id="orderItemsContainer">
+                    <div class="order-item mb-3 row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Menu Item</label>
+                            <select name="Items[0].MenuItemId" class="form-select">
+                                @if (ViewBag.MenuItems != null)
+                                {
+                                    @foreach (var item in ViewBag.MenuItems)
+                                    {
+                                        <option value="@item.Id">@item.Name - @item.Price.ToString("C")</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option disabled>No menu items available</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Quantity</label>
+                            <input name="Items[0].Quantity" type="number" min="1" value="1" class="form-control" />
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger remove-item w-100">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-secondary mb-3" id="addItemBtn">Add Item</button>
+
+                <!-- Submit -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success btn-lg">Create Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        let itemIndex = 1;
+
+        document.getElementById('addItemBtn').addEventListener('click', function() {
+            const container = document.getElementById('orderItemsContainer');
+            const firstItem = container.querySelector('.order-item');
+            const clone = firstItem.cloneNode(true);
+
+            // Update names
+            clone.querySelectorAll('select, input').forEach(el => {
+                const name = el.getAttribute('name');
+                const newName = name.replace(/\d+/, itemIndex);
+                el.setAttribute('name', newName);
+
+                if(el.tagName === 'INPUT') el.value = 1; // reset quantity
+            });
+
+            container.appendChild(clone);
+            itemIndex++;
+        });
+
+        // Remove item
+                document.getElementById('orderItemsContainer').addEventListener('click', function(e){
+            if(e.target.classList.contains('remove-item')){
+                const container = document.getElementById('orderItemsContainer');
+                const items = container.querySelectorAll('.order-item');
+                if(items.length > 1){
+                    e.target.closest('.order-item').remove();
+                }
+            }
+        });
+    </script>
 }

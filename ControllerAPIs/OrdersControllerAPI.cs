@@ -17,9 +17,9 @@ namespace FoodOrdering.ControllerAPIs
 
         // ================= GET ALL =================
         [HttpGet]
-        public async Task<ActionResult<List<OrderDTO>>> GetAll()
+        public async Task<ActionResult<List<OrderDTO>>> GetAll(OrderQuery query)
         {
-            var orders = await _ordersService.GetAllAsync();
+            var orders = await _ordersService.GetAllAsync(query);
             return Ok(orders);
         }
 

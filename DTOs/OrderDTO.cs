@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public int TableId { get; set; }
+        public int TableNumber { get; set; }
         public DateTime OrderTime { get; set; }
         public string? Status { get; set; }
         public decimal TotalAmount { get; set; }
