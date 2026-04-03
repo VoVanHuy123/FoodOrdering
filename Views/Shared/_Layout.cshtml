@@ -16,8 +16,21 @@
     <!-- GOOGLE FONT -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
           rel="stylesheet">
+    
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
     <style>
+        #toast-container > .toast {
+            opacity: 1 !important;
+            color: #ffffff !important;
+            font-family: 'Poppins', sans-serif !important;
+        }
+
+        #toast-container > .toast-warning { background-color: #f89406 !important; }
+        #toast-container > .toast-info { background-color: #17a2b8 !important; }
+        #toast-container > .toast-success { background-color: #28a745 !important; }
+        #toast-container > .toast-error { background-color: #dc3545 !important; }
 
             body {
                 font-family: 'Poppins', sans-serif;
@@ -218,7 +231,9 @@
 
     <!-- SignalR -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
-    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="~/js/orderHub.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

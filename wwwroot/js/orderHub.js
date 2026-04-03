@@ -98,12 +98,30 @@ const orderConnection = new signalR.HubConnectionBuilder()
 // UPDATE ORDER
 // ===============================
 orderConnection.on("OrderUpdated", function (order) {
+    console.log("Order Updated:", order);
 
-    const el = document.getElementById(`order-${order.id}`);
+    const orderCard = document.getElementById(`order-${order.id}`);
 
-    if (el) {
-        el.innerHTML =
-            `Order #${order.id} - ${order.status}`;
+    if (orderCard) {
+        const badge = orderCard.querySelector(".badge");
+        if (badge) {
+            badge.innerText = order.status;
+            badge.className = "badge";
+
+            if (order.status === "Completed") {
+                badge.classList.add("bg-success");
+            } else if (order.status === "Pending") {
+                badge.classList.add("bg-warning", "text-dark");
+            } else {
+                badge.classList.add("bg-secondary");
+            }
+        }
+
+        orderCard.firstElementChild.classList.remove("border-danger", "border", "border-3");
+
+        if (order.status === "Completed") {
+            toastr.success(`Đơn hàng #${order.id} đã thanh toán thành công qua VNPAY!`, "💰 Đã nhận tiền");
+        }
     }
 });
 
@@ -165,3 +183,22 @@ orderConnection.start()
 //}
 
 //start();
+
+orderConnection.on("ReceiveCashAlert", function (data) {
+    toastr.info(
+        `Bàn số: ${data.tableId || 'Không rõ'}`,
+        `🔔 ${data.message}`,
+        {
+            timeOut: 0,
+            extendedTimeOut: 0
+        }
+    );
+
+    if (data.orderId) {
+        const orderCard = document.getElementById(`order-${data.orderId}`);
+        if (orderCard) {
+            orderCard.firstElementChild.classList.remove("border-0");
+            orderCard.firstElementChild.classList.add("border", "border-danger", "border-3");
+        }
+    }
+});

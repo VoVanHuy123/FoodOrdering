@@ -1,11 +1,13 @@
 ﻿using FoodOrdering.DTOs;
 using FoodOrdering.services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrdering.ControllerAPIs.API
 {
     [Route("api/menu_items")]
     [ApiController]
+    [AllowAnonymous]
     public class MenuItemsControllerAPI : Controller
     {
         private readonly IMenuItemsService _menuService;
