@@ -1,4 +1,4 @@
-﻿@model FoodOrdering.DTOs.UserDTO;
+﻿@* @model FoodOrdering.DTOs.UserDTO;
 
 <h2>Edit User</h2>
 
@@ -32,4 +32,115 @@
     <button class="btn btn-warning">Update</button>
     <a asp-action="Index" class="btn btn-secondary">Back</a>
 
-</form>
+</form> *@
+@model FoodOrdering.DTOs.UserDTO
+
+<style>
+    .card {
+        border-radius: 15px;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+
+    .btn {
+        border-radius: 8px;
+    }
+
+    img.rounded-circle {
+        border: 3px solid #fff;
+    }
+</style>
+<div class="container mt-2 mb-4">
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow-lg border-0">
+
+                <!-- Header -->
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fa fa-user-edit me-2"></i>Edit User
+                    </h4>
+                </div>
+
+                <!-- Body -->
+                <div class="card-body p-4">
+
+                    <form asp-action="Edit" method="post">
+
+                        <input type="hidden" asp-for="Id" />
+
+                        <!-- Avatar -->
+                        <div class="text-center mb-4">
+                            <img src="https://ui-avatars.com/api/?name=@Model.FullName&background=random"
+                                 class="rounded-circle shadow"
+                                 width="90" height="90" />
+                        </div>
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa fa-at"></i></span>
+                                <input asp-for="Username" class="form-control" />
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Password <small class="text-muted">(leave empty if not change)</small>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                                <input name="Password" type="password" class="form-control" placeholder="New password..." />
+                            </div>
+                        </div>
+
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Full Name <small class="text-muted">(optional)</small>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa fa-user"></i></span>
+                                <input asp-for="FullName" class="form-control" />
+                            </div>
+                        </div>
+
+                        <!-- Role -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Role</label>
+                            <select asp-for="Role" class="form-select">
+                                <option value="Staff">Staff</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fa fa-arrow-left me-1"></i> Back
+                            </a>
+
+                            <button type="submit" class="btn btn-warning px-4">
+                                <i class="fa fa-save me-1"></i> Update
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>

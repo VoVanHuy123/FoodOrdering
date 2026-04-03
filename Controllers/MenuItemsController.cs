@@ -1,29 +1,36 @@
 ﻿using FoodOrdering.DTOs;
 using FoodOrdering.services.Interfaces;
+using FoodOrdering.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FoodOrdering.Controllers
 {
     public class MenuItemsController : Controller
     {
         private readonly IMenuItemsService _menuService;
+        private readonly ICategoriesService _categoriesService;
         private readonly ICloudinaryService _cloudinary;
 
         public MenuItemsController(
             IMenuItemsService menuService,
-            ICloudinaryService cloudinary)
+            ICloudinaryService cloudinary,
+            ICategoriesService categoriesService)
         {
             _menuService = menuService;
             _cloudinary = cloudinary;
+            _categoriesService = categoriesService;
         }
 
         // =====================
         // GET: MenuItems
         // =====================
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(MenuItemQueryDTO query)
         {
-            var menus = await _menuService.GetAllAsync();
+            var menus = await _menuService.GetAllAsync(query);
+            var categories = await _categoriesService.GetAllAsync();
+            ViewBag.Categories = categories;
             if (menus == null)
                 return Content("menus NULL");
 

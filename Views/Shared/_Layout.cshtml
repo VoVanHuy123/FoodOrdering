@@ -134,6 +134,19 @@
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
+                            @if(User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <li class="nav-item">
+                                        <a class="nav-link"
+                                               asp-controller="Users"
+                                               asp-action="Index">
+                                            <i class="bi bi-people-fill"></i> Users
+                                        </a>
+                                    </li>
+                                    
+                                </li>
+                            }
                             <li class="nav-item">
                                     <form asp-controller="Auth" asp-action="Logout" method="post">
                                         <button class="btn btn-danger">Logout</button>
@@ -169,7 +182,7 @@
     </div>
 
     <!-- ================= FOOTER ================= -->
-    <footer class="footer-custom mt-auto">
+    <footer class="footer-custom mt-auto mt-4">
         <div class="container">
 
             <div class="row">

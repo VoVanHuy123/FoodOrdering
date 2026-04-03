@@ -1,10 +1,12 @@
 ﻿using FoodOrdering.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrdering.ControllerAPIs.API
 {
     [Route("api/categories")]
     [ApiController]
+    [AllowAnonymous]
     public class CategoriesControllerAPI : Controller
     {
         private readonly ICategoriesService _cateService;

@@ -12,6 +12,16 @@ public class MenuItemsService : IMenuItemsService
     {
         _context = context;
     }
+    public static string RemoveDiacritics(string text)
+    {
+        var normalized = text.Normalize(System.Text.NormalizationForm.FormD);
+        var chars = normalized
+            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c)
+                != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .ToArray();
+
+        return new string(chars).Normalize(System.Text.NormalizationForm.FormC);
+    }
 
     // ================= GET ALL =================
     public async Task<List<MenuItemDTO>> GetAllAsync() 
@@ -31,10 +41,25 @@ public class MenuItemsService : IMenuItemsService
             .AsQueryable();
 
         // ===== SEARCH NAME =====
+        //if (!string.IsNullOrEmpty(query.Search))
+        //{
+        //    menuQuery = menuQuery
+        //        .Where(x => x.Name!.Contains(query.Search));
+        //}
+        //if (!string.IsNullOrEmpty(query.Search))
+        //{
+        //    var keyword = RemoveDiacritics(query.Search.ToLower());
+
+        //    menuQuery = menuQuery
+        //        .AsEnumerable() 
+        //        .Where(x => RemoveDiacritics(x.Name!.ToLower()).Contains(keyword))
+        //        .AsQueryable();
+        //}
         if (!string.IsNullOrEmpty(query.Search))
         {
-            menuQuery = menuQuery
-                .Where(x => x.Name!.Contains(query.Search));
+            menuQuery = menuQuery.Where(x =>
+                EF.Functions.Collate(x.Name!, "SQL_Latin1_General_CP1_CI_AI")
+                .Contains(query.Search));
         }
 
         // ===== FILTER CATEGORY =====
