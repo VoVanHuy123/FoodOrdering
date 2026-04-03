@@ -1,15 +1,81 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    ViewData["FullWidth"] = true;
 }
-@model List<FoodOrdering.Models.MenuItems>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <h2>Menu</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Home</title>
 
-    @foreach (var item in Model)
-    {
-        <p>@item.Name - @item.Price</p>
-    }
-</div>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+            body {
+                margin: 0;
+            }
+
+            .hero {
+                height: calc(100vh - 70px); /* trừ chiều cao navbar */
+                width: 100%;
+                background: url('/imgs/food_background.jpg') center/cover no-repeat;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .overlay {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.6);
+            }
+
+            .content {
+                position: relative;
+                color: white;
+                text-align: center;
+            }
+
+                .content h1 {
+                    font-size: 70px;
+                    font-weight: 800;
+                }
+
+                .content span {
+                    color: #ffc107;
+                }
+
+            .btn_homepage {
+                background: #ffc107;
+                padding: 15px 30px;
+                border-radius: 8px;
+                text-decoration: none;
+                color: black;
+                font-weight: bold;
+            }
+    </style>
+</head>
+
+<body>
+
+    <section class="hero">
+        <div class="overlay"></div>
+
+        <div class="content">
+            <h1>HOT & FRESH <br><span>FOOD</span></h1>
+            <p>Delicious food made just for you</p>
+            @if (User.Identity.IsAuthenticated == false)
+                {
+                    <form asp-controller="Auth" asp-action="Login" method="get">
+                        <button class="btn_homepage">Login</button>
+                    </form>
+                }
+                
+        </div>
+    </section>
+
+</body>
+</html>

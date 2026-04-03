@@ -1,49 +1,185 @@
-﻿@model IEnumerable<FoodOrdering.DTOs.OrderDTO>
+﻿@model FoodOrdering.DTOs.PagedResult<FoodOrdering.DTOs.OrderDTO>
 
 @{
-    ViewData["Title"] = "Orders";
+    var query = ViewBag.Query as FoodOrdering.DTOs.OrderQuery;
 }
 
-<h1>Orders</h1>
+<div class="container mt-4">
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">🧾 Order Management</h2>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Table</th>
-            <th>Order Time</th>
-            <th>Status</th>
-            <th>Total Amount</th>
-            <th>Note</th>
-            <th></th>
-        </tr>
-    </thead>
+        <a asp-action="Create" class="btn btn-primary">
+            + Create Order
+        </a>
+    </div>
 
-    <tbody id="orders">
-        @foreach (var item in Model)
+    <!-- SEARCH + FILTER -->
+    <form method="get" class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <input name="TableNumber"
+                   value="@query?.TableNumber"
+                   class="form-control"
+                   placeholder="Table Number" />
+        </div>
+
+        <div class="col-md-3">
+            <select name="Status" class="form-select">
+
+                <option value="">All Status</option>
+
+                <option value="Pending"
+                        selected="@(query?.Status == "Pending")">
+                    Pending
+                </option>
+
+                <option value="Completed"
+                        selected="@(query?.Status == "Completed")">
+                    Completed
+                </option>
+
+                <option value="Cancelled"
+                        selected="@(query?.Status == "Cancelled")">
+                    Cancelled
+                </option>
+
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button class="btn btn-success w-100">
+                🔍 Search
+            </button>
+        </div>
+
+    </form>
+
+    <!-- ORDER CARDS -->
+    <div class="row" id="orders">
+
+        @if (Model.Items != null && Model.Items.Any())
         {
-            <tr id="order-@item.Id">
-                <td>@item.TableId</td>
+            @foreach (var order in Model.Items)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
 
-                <td>
-                    @item.OrderTime.ToString("dd/MM/yyyy HH:mm")
-                </td>
+                    <div class="card shadow-sm border-0 h-100">
 
-                <td>@item.Status</td>
+                        <div class="card-body">
 
-                <td>@item.TotalAmount.ToString("N0") VNĐ</td>
+                            <!-- HEADER -->
+                            <div class="d-flex justify-content-between">
 
-                <td>@item.Note</td>
+                                <h5 class="fw-bold">
+                                    🍽 Table @order.TableId
+                                </h5>
 
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
+                                <span class="badge
+                                    @(order.Status == "Completed" ? "bg-success" :
+                                                                            order.Status == "Pending" ? "bg-warning text-dark" :
+                                                                            "bg-secondary")">
+
+                                    @order.Status
+                                </span>
+
+                            </div>
+
+                            <hr />
+
+                            <!-- INFO -->
+                            <p class="mb-2">
+                                <strong>Time:</strong><br />
+                                @order.OrderTime.ToString("dd/MM/yyyy HH:mm")
+                            </p>
+
+                            <p class="mb-2">
+                                <strong>Total:</strong><br />
+                                <span class="text-danger fw-bold fs-5">
+                                    @order.TotalAmount.ToString("N0") VNĐ
+                                </span>
+                            </p>
+
+                            @if (!string.IsNullOrEmpty(order.Note))
+                            {
+                                <p class="text-muted">
+                                    📝 @order.Note
+                                </p>
+                            }
+
+                        </div>
+
+                        <!-- FOOTER -->
+                        <div class="card-footer bg-white border-0">
+
+                            <div class="d-flex justify-content-between">
+
+                                <a asp-action="Details"
+                                       asp-route-id="@order.Id"
+                                       class="btn btn-outline-primary btn-sm">
+                                    Details
+                                </a>
+
+                                <a asp-action="Edit"
+                                       asp-route-id="@order.Id"
+                                       class="btn btn-outline-warning btn-sm">
+                                    Edit
+                                </a>
+
+                                <a asp-action="Delete"
+                                       asp-route-id="@order.Id"
+                                       class="btn btn-outline-danger btn-sm">
+                                    Delete
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
         }
-    </tbody>
-</table>
+        else
+        {
+            <div class="text-center text-muted">
+                No orders found.
+            </div>
+        }
+
+    </div>
+
+    <!-- PAGINATION -->
+    @{
+        int totalPages =
+        (int)Math.Ceiling((double)Model.TotalItems / Model.PageSize);
+    }
+
+    <nav>
+        <ul class="pagination justify-content-center">
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+
+                    <a class="page-link"
+                           asp-action="Index"
+                           asp-route-PageNumber="@i"
+                           asp-route-TableNumber="@query?.TableNumber"
+                           asp-route-Status="@query?.Status">
+
+                        @i
+                    </a>
+
+                </li>
+            }
+
+        </ul>
+    </nav>
+
+</div>
+@section Scripts {
+    <script src="~/js/orderHub.js"></script>
+}

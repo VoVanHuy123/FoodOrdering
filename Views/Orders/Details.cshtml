@@ -1,48 +1,154 @@
-﻿@model FoodOrdering.Models.Orders
+﻿@model FoodOrdering.DTOs.OrderDTO
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Order Details";
 }
 
-<h1>Details</h1>
+<div class="container mt-4">
 
-<div>
-    <h4>Orders</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Table)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Table.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.OrderTime)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.OrderTime)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TotalAmount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TotalAmount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Note)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Note)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <div class="row">
+
+        <!-- ================= LEFT : ORDER INFO ================= -->
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">🧾 Order Information</h5>
+                </div>
+
+                <div class="card-body">
+
+                    <p>
+                        <strong>🍽 Table:</strong>
+                        <span class="fw-bold">#@Model.TableId</span>
+                    </p>
+
+                    <p>
+                        <strong>⏰ Order Time:</strong><br />
+                        @Model.OrderTime.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong><br />
+
+                        <span class="badge
+                            @(Model.Status == "Completed" ? "bg-success" :
+                                                            Model.Status == "Pending" ? "bg-warning text-dark" :
+                                                            "bg-secondary")">
+
+                            @Model.Status
+                        </span>
+                    </p>
+
+                    <hr />
+
+                    <h4 class="text-danger fw-bold">
+                        Total: @Model.TotalAmount.ToString("N0") VNĐ
+                    </h4>
+
+                    @if (!string.IsNullOrEmpty(Model.Note))
+                    {
+                        <div class="alert alert-light mt-3">
+                            📝 @Model.Note
+                        </div>
+                    }
+
+                </div>
+
+                <div class="card-footer text-center bg-white">
+
+                    <a asp-action="Edit"
+                           asp-route-id="@Model.Id"
+                           class="btn btn-warning btn-sm">
+                        Edit
+                    </a>
+
+                    <a asp-action="Index"
+                           class="btn btn-secondary btn-sm">
+                        Back
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= RIGHT : ORDER ITEMS ================= -->
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">🍔 Ordered Items</h5>
+                </div>
+
+                <div class="card-body">
+
+                    @if (Model.Items == null || !Model.Items.Any())
+                    {
+                        <div class="alert alert-info">
+                            No items in this order.
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+
+                                <!-- IMAGE -->
+                                <img src="@Url.Content(item.ImageUrl ?? "~/imgs/food.png")"
+                                     width="80"
+                                     height="80"
+                                     class="rounded shadow-sm me-3"
+                                     style="object-fit:cover;" />
+
+                                <!-- INFO -->
+                                <div class="flex-grow-1">
+
+                                    <h5 class="mb-1 fw-bold">
+                                        @item.MenuItemName
+                                    </h5>
+
+                                    <div class="text-muted">
+                                        Price:
+                                        @item.Price.ToString("N0") VNĐ
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(item.Note))
+                                    {
+                                        <div class="small text-secondary">
+                                            📝 @item.Note
+                                        </div>
+                                    }
+
+                                </div>
+
+                                <!-- QUANTITY -->
+                                <div class="text-end">
+
+                                    <span class="badge bg-primary fs-6">
+                                        x @item.Quantity
+                                    </span>
+
+                                    <div class="fw-bold text-danger mt-2">
+                                        @((item.Price * item.Quantity).ToString("N0")) VNĐ
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        }
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>

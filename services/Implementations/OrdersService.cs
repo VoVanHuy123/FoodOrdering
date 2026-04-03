@@ -22,11 +22,35 @@ namespace FoodOrdering.services.Implementations
         }
 
         // ================= GET ALL =================
-        public async Task<List<OrderDTO>> GetAllAsync()
+        public async Task<PagedResult<OrderDTO>> GetAllAsync(OrderQuery query)
         {
-            return await _context.Orders
+            var orders = _context.Orders
+                .Include(o => o.Table)
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.MenuItem)
+                    .ThenInclude(i => i.MenuItem)
+                .AsQueryable();
+
+            // ===== FILTER TABLE =====
+            if (query.TableNumber.HasValue)
+            {
+                orders = orders.Where(o =>
+                    o.Table.TableNumber == query.TableNumber.Value);
+            }
+
+            // ===== FILTER STATUS =====
+            if (!string.IsNullOrEmpty(query.Status))
+            {
+                orders = orders.Where(o => o.Status == query.Status);
+            }
+
+            // ===== TOTAL COUNT =====
+            var totalItems = await orders.CountAsync();
+
+            // ===== PAGINATION =====
+            var data = await orders
+                .OrderByDescending(o => o.OrderTime)
+                .Skip((query.PageNumber - 1) * query.PageSize)
+                .Take(query.PageSize)
                 .Select(o => new OrderDTO
                 {
                     Id = o.Id,
@@ -34,17 +58,17 @@ namespace FoodOrdering.services.Implementations
                     OrderTime = o.OrderTime,
                     Status = o.Status,
                     TotalAmount = o.TotalAmount,
-                    Note = o.Note,
-                    Items = o.OrderItems.Select(i => new OrderItemDTO
-                    {
-                        MenuItemId = i.MenuItemId,
-                        MenuItemName = i.MenuItem != null ? i.MenuItem.Name : null,
-                        Quantity = i.Quantity,
-                        Price = i.Price,
-                        Note = i.Note
-                    }).ToList()
+                    Note = o.Note
                 })
                 .ToListAsync();
+
+            return new PagedResult<OrderDTO>
+            {
+                TotalItems = totalItems,
+                PageNumber = query.PageNumber,
+                PageSize = query.PageSize,
+                Items = data
+            };
         }
 
         // ================= GET BY ID =================
@@ -69,6 +93,7 @@ namespace FoodOrdering.services.Implementations
                 {
                     MenuItemId = i.MenuItemId,
                     MenuItemName = i.MenuItem != null ? i.MenuItem.Name : null,
+                    ImageUrl = i.MenuItem.ImageUrl,
                     Quantity = i.Quantity,
                     Price = i.Price,
                     Note = i.Note
@@ -173,6 +198,88 @@ namespace FoodOrdering.services.Implementations
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<OrderEditDTO?> GetEditAsync(int id)
+        { 
+            var order = await _context.Orders
+            .Include(o => o.OrderItems)
+            .ThenInclude(i => i.MenuItem)
+            .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null) return null;
+
+            return new OrderEditDTO
+            {
+                Id = order.Id,
+                TableId = order.TableId,
+                OrderTime = order.OrderTime,
+                Status = order.Status,
+                Note = order.Note,
+
+                Items = order.OrderItems.Select(i => new OrderItemEditDTO
+                {
+                    Id = i.Id,
+                    MenuItemId = i.MenuItemId,
+                    MenuItemName = i.MenuItem.Name,
+                    Price = i.Price,
+                    Quantity = i.Quantity,
+                    ImageUrl = i.MenuItem.ImageUrl
+                }).ToList()
+            };
+        }
+
+        public async Task UpdateAsync(OrderEditDTO dto)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstAsync(o => o.Id == dto.Id);
+
+            order.TableId = dto.TableId;
+            order.Status = dto.Status;
+            order.Note = dto.Note;
+
+            if (dto.Items != null)
+            {
+                foreach (var item in dto.Items)
+                {
+                    var existing = order.OrderItems
+                        .FirstOrDefault(x => x.Id == item.Id);
+
+                    // DELETE
+                    if (item.IsDeleted)
+                    {
+                        if (existing != null)
+                            _context.OrderItems.Remove(existing);
+
+                        continue;
+                    }
+
+                    // UPDATE
+                    if (existing != null)
+                    {
+                        existing.Quantity = item.Quantity;
+                    }
+                    else
+                    {
+                        order.OrderItems.Add(new OrderItems
+                        {
+                            MenuItemId = item.MenuItemId,
+                            Quantity = item.Quantity,
+                            Price = item.Price
+                        });
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Recalculate total
+            order.TotalAmount = await _context.OrderItems
+                .Where(i => i.OrderId == order.Id)
+                .SumAsync(i => i.Quantity * i.Price);
+
+            await _context.SaveChangesAsync();
         }
     }
 }

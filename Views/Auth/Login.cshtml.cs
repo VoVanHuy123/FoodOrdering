@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace FoodOrdering.Views.Users
+namespace FoodOrdering.Views.Auth
 {
     public class LoginModel : PageModel
     {

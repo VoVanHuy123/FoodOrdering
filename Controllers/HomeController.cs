@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using FoodOrdering.Context;
 using FoodOrdering.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrdering.Controllers
@@ -28,7 +29,7 @@ namespace FoodOrdering.Controllers
         {
             _context = context;
         }
-
+        [AllowAnonymous]
         public IActionResult Index()
         {
             var foods = _context.MenuItems.ToList(); // lấy data DB

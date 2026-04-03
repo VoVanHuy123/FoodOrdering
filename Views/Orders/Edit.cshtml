@@ -1,54 +1,198 @@
-﻿@model FoodOrdering.Models.Orders
+﻿ 
+@model FoodOrdering.DTOs.OrderEditDTO
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Order";
 }
 
-<h1>Edit</h1>
+<form asp-action="Edit" method="post">
 
-<h4>Orders</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="TableId" class="control-label"></label>
-                <select asp-for="TableId" class="form-control" asp-items="ViewBag.TableId"></select>
-                <span asp-validation-for="TableId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="OrderTime" class="control-label"></label>
-                <input asp-for="OrderTime" class="form-control" />
-                <span asp-validation-for="OrderTime" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Status" class="control-label"></label>
-                <input asp-for="Status" class="form-control" />
-                <span asp-validation-for="Status" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TotalAmount" class="control-label"></label>
-                <input asp-for="TotalAmount" class="form-control" />
-                <span asp-validation-for="TotalAmount" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Note" class="control-label"></label>
-                <input asp-for="Note" class="form-control" />
-                <span asp-validation-for="Note" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+    <div class="container mt-4">
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+        <input type="hidden" asp-for="Id" />
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+        <div class="row" id="orders">
+
+            <!-- ================= LEFT : ORDER INFO ================= -->
+            <div class="col-lg-4">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">✏️ Edit Order</h5>
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- TABLE -->
+                        <div class="mb-3">
+                            <label class="form-label">🍽 Table</label>
+
+                            <select asp-for="TableId"
+                                    asp-items="ViewBag.TableId"
+                                    class="form-select">
+                            </select>
+                        </div>
+
+                        <!-- ORDER TIME -->
+                        <div class="mb-3">
+                            <label class="form-label">⏰ Order Time</label>
+
+                            <input asp-for="OrderTime"
+                                   class="form-control"
+                                   type="datetime-local" />
+                        </div>
+
+                        <!-- STATUS -->
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+
+                            <select asp-for="Status" class="form-select">
+                                <option value="Pending">Pending</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Canceled">Canceled</option>
+                            </select>
+                        </div>
+
+                        <!-- NOTE -->
+                        <div class="mb-3">
+                            <label class="form-label">📝 Note</label>
+
+                            <textarea asp-for="Note"
+                                          class="form-control">
+                        </textarea>
+                            </div>
+
+                        </div>
+
+                        <div class="card-footer text-center bg-white">
+
+                            <button type="submit"
+                                    class="btn btn-success">
+                                💾 Save Changes
+                            </button>
+
+                            <a asp-action="Details"
+                                   asp-route-id="@Model.Id"
+                                   class="btn btn-secondary">
+                                Cancel
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ================= RIGHT : ORDER ITEMS ================= -->
+                <div class="col-lg-8">
+
+                    <div class="card shadow-sm border-0">
+
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0">🍔 Edit Ordered Items</h5>
+                        </div>
+
+                        <div class="card-body">
+
+                            @if (Model.Items == null || !Model.Items.Any())
+                            {
+                                <div class="alert alert-info">
+                                    No items in this order.
+                                </div>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < Model.Items.Count; i++)
+                                {
+                                    <div id="row-@i"
+                                         class="order-item d-flex align-items-center mb-4 border-bottom pb-3">
+
+                                        <!-- hidden fields -->
+                                        <input type="hidden" asp-for="Items[i].Id" />
+                                        <input type="hidden" asp-for="Items[i].MenuItemId" />
+                                        <input type="hidden"
+                                            asp-for="Items[i].IsDeleted"
+                                            class="is-deleted" 
+                                              value="false" />
+
+                                        <!-- IMAGE -->
+                                        <img src="@(Model.Items[i].ImageUrl ?? Url.Content("~/imgs/food.png"))"
+                                             width="80"
+                                             height="80"
+                                             class="rounded shadow-sm me-3"
+                                             style="object-fit:cover;" />
+
+                                        <!-- INFO -->
+                                        <div class="flex-grow-1">
+
+                                            <h5 class="fw-bold">
+                                                @Model.Items[i].MenuItemName
+                                            </h5>
+
+                                            <div class="text-muted">
+                                                Price:
+                                                @Model.Items[i].Price.ToString("N0") VNĐ
+                                            </div>
+
+                                        </div>
+
+                                        <!-- QUANTITY -->
+                                        <div class="text-center me-3">
+
+                                            <label>Qty</label>
+
+                                            <input asp-for="Items[i].Quantity"
+                                                   class="form-control text-center"
+                                                   style="width:80px" />
+
+                                        </div>
+
+                                        <!-- REMOVE -->
+                                        <div>
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-danger"
+                                                    onclick="removeItem(this)">
+                                                Remove
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+                                }
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+
+    <script>
+        function removeItem(btn) {
+
+            const item = btn.closest('.order-item');
+			console.log(item);
+
+            if (!item) return;
+
+            // set delete flag
+            const deleteInput = item.querySelector('.is-deleted');
+            if (deleteInput)
+                deleteInput.value = "true";
+
+            // hide UI
+                item.style.setProperty('display', 'none', 'important');
+
+        console.log('Item hidden');
+        }
+    </script>
+   
