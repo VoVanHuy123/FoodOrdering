@@ -1,44 +1,170 @@
-﻿@model FoodOrdering.Models.Tables
+﻿@model FoodOrdering.DTOs.TableDTO
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Table";
 }
 
-<h1>Edit</h1>
+<div class="container mt-2 mb-4">
 
-<h4>Tables</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="TableNumber" class="control-label"></label>
-                <input asp-for="TableNumber" class="form-control" />
-                <span asp-validation-for="TableNumber" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="QRCode" class="control-label"></label>
-                <input asp-for="QRCode" class="form-control" />
-                <span asp-validation-for="QRCode" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Status" class="control-label"></label>
-                <input asp-for="Status" class="form-control" />
-                <span asp-validation-for="Status" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+    <div class="card shadow-lg border-0">
+
+        <!-- HEADER -->
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">
+                ✏️ Edit Table @Model.TableNumber
+            </h3>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body">
+
+            <!-- ===== EDIT FORM ===== -->
+            <form asp-action="Edit">
+
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="QRCode" />
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger">
+                </div>
+
+                <div class="row">
+
+                    <!-- LEFT SIDE -->
+                    <div class="col-md-6">
+
+                        <!-- TABLE NUMBER -->
+                        <div class="mb-3">
+                            <label asp-for="TableNumber"
+                                   class="form-label fw-bold">
+                                Table Number
+                            </label>
+
+                            <input asp-for="TableNumber"
+                                   class="form-control form-control-lg" />
+
+                            <span asp-validation-for="TableNumber"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <!-- STATUS -->
+                        <div class="mb-3">
+                            <label asp-for="Status"
+                                   class="form-label fw-bold">
+                                Status
+                            </label>
+
+                            <select asp-for="Status"
+                                    id="table-status-select"
+                                    class="form-select form-select-lg">
+
+                                <option value="Available">Available</option>
+                                <option value="Occupied">Occupied</option>
+                                <option value="Reserved">Reserved</option>
+
+                            </select>
+
+                            <span asp-validation-for="Status"
+                                  class="text-danger"></span>
+                        </div>
+
+                    </div>
+
+                    <!-- RIGHT SIDE -->
+                    <div class="col-md-6 text-center">
+
+                        <label class="form-label fw-bold">
+                            QR Code Preview
+                        </label>
+
+                        @if (!string.IsNullOrEmpty(Model.QRCode))
+                        {
+                            <div class="mb-3">
+                                <img src="@Model.QRCode"
+                                     class="img-fluid rounded shadow"
+                                     style="max-height:220px;" />
+                            </div>
+
+                            <div class="d-flex justify-content-center gap-2">
+
+                                <!-- VIEW QR -->
+                                <a href="@Model.QRCode"
+                                       target="_blank"
+                                       class="btn btn-outline-primary btn-sm">
+                                    👁 View QR
+                                </a>
+
+                                <!-- RECREATE QR BUTTON -->
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm"
+                                        onclick="submitRecreateQR()">
+                                    🔄 ReCreate QR
+                                </button>
+
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No QR Code</p>
+                            <button type="button"
+                                    class="btn btn-outline-danger btn-sm"
+                                    onclick="submitRecreateQR()">
+                                🔄 ReCreate QR
+                            </button>
+                        }
+
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <!-- ACTION BUTTONS -->
+                <div class="d-flex justify-content-between">
+
+                    <a asp-action="Index"
+                           class="btn btn-outline-secondary">
+                        ← Back
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-success px-4">
+                        💾 Save Changes
+                    </button>
+
+                </div>
+
+            </form>
+
+            <!-- ===== SEPARATE FORM (IMPORTANT FIX) ===== -->
+            <form id="recreateQRForm"
+                  asp-action="ReCreateQaCode"
+                  method="post">
+
+                <input type="hidden" name="id" value="@Model.Id" />
+                @Html.AntiForgeryToken()
+
+            </form>
+
+        </div>
+
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        function submitRecreateQR() {
+
+            if (confirm(
+                "Are you sure you want to recreate QR Code?\nOld QR Code will be replaced!"
+            )) {
+                document.getElementById("recreateQRForm").submit();
+            }
+
+        }
+    </script>
 }

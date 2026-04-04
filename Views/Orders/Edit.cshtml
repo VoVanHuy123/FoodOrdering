@@ -48,6 +48,7 @@
                             <label class="form-label">Status</label>
 
                             <select asp-for="Status" class="form-select">
+                                <option value="Preparing">Preparing</option>
                                 <option value="Pending">Pending</option>
                                 <option value="Completed">Completed</option>
                                 <option value="Canceled">Canceled</option>
@@ -106,7 +107,7 @@
                                 @for (int i = 0; i < Model.Items.Count; i++)
                                 {
                                     <div id="row-@i"
-                                         class="order-item d-flex align-items-center mb-4 border-bottom pb-3">
+                                         class="order-item d-flex align-items-center mb-4 border-bottom p-3 @((Model.Items[i].IsAvailable == false) ? "border-warning bg-warning-subtle" : "")">
 
                                         <!-- hidden fields -->
                                         <input type="hidden" asp-for="Items[i].Id" />

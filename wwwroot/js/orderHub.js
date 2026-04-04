@@ -14,55 +14,67 @@ const orderConnection = new signalR.HubConnectionBuilder()
 // RECEIVE NEW ORDER
 // ===============================
 
-    orderConnection.on("ReceiveNewOrder", function (order) {
+orderConnection.on("ReceiveNewOrder", function (order) {
 
-        console.log("New Order:", order);
+    const list = document.getElementById("orders");
+    if (!list) return;
 
-        const list = document.getElementById("orders");
-        console.log("Orders List Element:", list);
-        if (!list) return;
+    const statusClass =
+        order.status === "Completed"
+            ? "bg-success"
+            : order.status === "Pending"
+                ? "bg-warning text-dark"
+                : "bg-secondary";
 
-        const statusClass =
-            order.status === "Completed"
-                ? "bg-success"
-                : order.status === "Pending"
-                    ? "bg-warning text-dark"
-                    : "bg-secondary";
+    // ✅ tạo badge bằng JS
+    const errorBadge = order.isError
+        ? `
+            <div class="mt-2">
+                <span class="badge bg-danger">
+                    ⚠ Has item out of stock
+                </span>
+            </div>
+          `
+        : "";
 
-        const html = `
-        <div class="col-md-6 col-lg-4 mb-4" id="order-${order.id}">
-            <div class="card shadow-sm border-0 h-100">
+    const cardErrorClass = order.isError
+        ? "border-warning bg-warning-subtle"
+        : "";
 
-                <div class="card-body">
+    const html = `
+    <div class="col-md-6 col-lg-4 mb-4" id="order-${order.id}">
+        <div class="card shadow-sm border-0 h-100 ${cardErrorClass}">
 
-                    <div class="d-flex justify-content-between">
-                        <h5 class="fw-bold">
-                            🍽 Table ${order.tableId}
-                        </h5>
+            <div class="card-body">
 
-                        <span class="badge ${statusClass}">
-                            ${order.status}
-                        </span>
-                    </div>
+                <div class="d-flex justify-content-between">
+                    <h5 class="fw-bold">
+                        🍽 Table ${order.tableId}
+                    </h5>
 
-                    <hr/>
-
-                    <p>
-                        <strong>Time:</strong><br/>
-                        ${new Date(order.orderTime)
-                .toLocaleString()}
-                    </p>
-
-                    <p>
-                        <strong>Total:</strong><br/>
-                        <span class="text-danger fw-bold fs-5">
-                            ${order.totalAmount.toLocaleString()} VNĐ
-                        </span>
-                    </p>
-
+                    <span class="badge ${statusClass}">
+                        ${order.status}
+                    </span>
                 </div>
 
-                <div class="card-footer bg-white border-0">
+                ${errorBadge}
+
+                <hr/>
+
+                <p>
+                    <strong>Time:</strong><br/>
+                    ${new Date(order.orderTime).toLocaleString()}
+                </p>
+
+                <p>
+                    <strong>Total:</strong><br/>
+                    <span class="text-danger fw-bold fs-5">
+                        ${order.totalAmount.toLocaleString()} VNĐ
+                    </span>
+                </p>
+
+            </div>
+            <div class="card-footer bg-white border-0">
                     <div class="d-flex justify-content-between">
 
                         <a href="/Orders/Details/${order.id}"
@@ -83,15 +95,114 @@ const orderConnection = new signalR.HubConnectionBuilder()
                     </div>
                 </div>
 
-            </div>
         </div>
+    </div>
     `;
 
-        // ⭐ thêm order mới lên đầu list
-        list.insertAdjacentHTML("afterbegin", html);
+    list.insertAdjacentHTML("afterbegin", html);
+});
+// ===============================
+// UPDATE MenuItemNotAvailable
+// ===============================
+orderConnection.on("MenuItemNotAvailable", function (orderIds) {
 
+    console.log("Menu Item Not Available:", orderIds);
+
+    if (window.location.pathname === "/Orders") {
+        location.reload();
+    }
+    
+});
+
+
+
+orderConnection.on("TableOccupied",
+    function (table) {
+        console.log("Table Occupied:",table)
+        
+
+        // =========================
+        // STATUS COLOR
+        // =========================
+        let statusClass = "bg-secondary";
+
+        if (table.status === "Available")
+            statusClass = "bg-success";
+
+        if (table.status === "Occupied")
+            statusClass = "bg-danger";
+
+        if (table.status === "Reserved")
+            statusClass = "bg-warning text-dark";
+        console.log(window.location.pathname.toLowerCase());
+
+
+        // =================================================
+        // 1️⃣ IF USER IS IN /Tables (INDEX PAGE)
+        // =================================================
+        if (window.location.pathname.toLowerCase() === "/tables") {
+            console.log("User is in /Tables page");
+            console.log(`table_${table.tableNumber}`);
+            const badge = document.getElementById(`table_${table.tableNumber}`);
+            console.log("Badge element:", badge);
+
+            if (badge) {
+                badge.className =
+                    `badge ${statusClass} mb-3 px-3 py-2`;
+
+                badge.innerText = table.status;
+            }
+        }
+
+
+        // =================================================
+        // 2️⃣ IF USER IS IN DETAILS PAGE
+        // /Tables/Details/{id}
+        // =================================================
+        if (window.location.pathname
+            .toLowerCase()
+            .includes(`/tables/details/${table.id}`)) {
+
+            const headerStatus =
+                document.getElementById("table-status");
+
+            const bodyStatus =
+                document.getElementById("table-status-body");
+
+            if (headerStatus) {
+                headerStatus.className =
+                    `badge ${statusClass} fs-6 px-3 py-2`;
+
+                headerStatus.innerText = table.status;
+            }
+
+            if (bodyStatus) {
+                bodyStatus.className =
+                    `badge ${statusClass}`;
+
+                bodyStatus.innerText = table.status;
+            }
+        }
+
+
+        // =================================================
+        // 3️⃣ IF USER IS IN EDIT PAGE
+        // /Tables/Edit/{id}
+        // =================================================
+        if (window.location.pathname
+            .toLowerCase()
+            .includes(`/tables/edit/${table.id}`)) {
+
+            const select =
+                document.getElementById("table-status-select");
+
+            if (select) {
+                select.value = table.status;
+            }
+        }
 
     });
+
 
 
 // ===============================

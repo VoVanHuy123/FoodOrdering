@@ -1,47 +1,90 @@
-﻿@model IEnumerable<FoodOrdering.Models.Tables>
+﻿@model IEnumerable<FoodOrdering.DTOs.TableDTO>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Tables";
 }
 
-<h1>Index</h1>
+<div class="container mt-4">
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.TableNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.QRCode)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.TableNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.QRCode)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">🍽 Restaurant Tables</h2>
+
+        <a asp-action="Create" class="btn btn-primary">
+            + Create Table
+        </a>
+    </div>
+
+    <div class="row">
+
+        @foreach (var table in Model)
+        {
+            var statusClass =
+                table.Status == "Available" ? "bg-success" :
+                table.Status == "Occupied" ? "bg-danger" :
+                table.Status == "Reserved" ? "bg-warning text-dark" :
+                "bg-secondary";
+
+            <div class="col-md-4 col-lg-3 mb-4">
+
+                <div class="card shadow-sm border-0 h-100">
+
+                    <div class="card-body text-center">
+
+                        <!-- TABLE NUMBER -->
+                        <h3 class="fw-bold mb-2">
+                            🍽 Table @table.TableNumber
+                        </h3>
+
+                        <!-- STATUS -->
+                        <span class="badge @statusClass mb-3 px-3 py-2" id="table_@table.TableNumber">
+                            @table.Status
+                        </span>
+
+                        <!-- QR CODE -->
+                        @if (!string.IsNullOrEmpty(table.QRCode))
+                        {
+                            <div class="mb-3">
+                                <img src="@table.QRCode"
+                                     class="img-fluid rounded shadow"
+                                     style="max-height:120px;" />
+                            </div>
+                        }
+
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    <div class="card-footer bg-white border-0">
+                        <div class="d-flex justify-content-between">
+
+                            <a asp-action="Details"
+                                   asp-route-id="@table.Id"
+                                   class="btn btn-outline-primary btn-sm">
+                                Details
+                            </a>
+
+                            <a asp-action="Edit"
+                                   asp-route-id="@table.Id"
+                                   class="btn btn-outline-warning btn-sm">
+                                Edit
+                            </a>
+
+                            <a asp-action="Delete"
+                                   asp-route-id="@table.Id"
+                                   class="btn btn-outline-danger btn-sm">
+                                Delete
+                            </a>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+@section Scripts {
+    <script src="~/js/orderHub.js"></script>
 }
-    </tbody>
-</table>

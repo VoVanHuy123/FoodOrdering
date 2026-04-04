@@ -1,68 +1,5 @@
-﻿@* @model IEnumerable<FoodOrdering.Models.MenuItems>
-
-@{
-    ViewData["Title"] = "Index";
-}
-
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImageUrl)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsAvailable)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImageUrl)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsAvailable)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table> *@
+﻿@using FoodOrdering.DTOs
+@* 
 @model List<FoodOrdering.DTOs.MenuItemDTO>
 
 @{
@@ -88,5 +25,140 @@
 
         </div>
     }
+
+</div> *@
+@model PagedResult<FoodOrdering.DTOs.MenuItemDTO>
+@{
+    var labels = new[] { "Hot", "New", "Sale" };
+    var random = new Random();
+    var label = labels[random.Next(labels.Length)];
+}
+
+<style>
+    .menu-link {
+        display: block;
+        padding: 6px 0;
+        color: #555;
+        text-decoration: none;
+        border-bottom: 1px dashed #ddd;
+    }
+
+        .menu-link:hover {
+            color: orange;
+        }
+
+    .menu-card {
+        transition: 0.3s;
+        border-radius: 10px;
+    }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .menu-card img {
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+    .badge {
+        font-size: 0.75rem;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        
+        <!-- LEFT SIDEBAR -->
+        <div class="col-md-3">
+
+            <!-- Categories -->
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold">CATEGORIES</h6>
+                    <ul class="list-unstyled mt-3">
+                        <li>
+                            <a href="?" class="menu-link">all</a>
+                        </li>
+                        @foreach (var c in ViewBag.Categories)
+                        {
+                            <li>
+                                <a href="?CategoryId=@c.Id" class="menu-link">@c.Name</a>
+                            </li>
+                        }
+                        
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <form method="get">
+                        <div class="input-group">
+                            <input name="Search" class="form-control" placeholder="Search..." />
+                            <button class="btn btn-warning">🔍</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Price -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold">PRICE RANGE</h6>
+                    <p class="text-muted">$2 - $15</p>
+                    <input type="range" class="form-range">
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT CONTENT -->
+        <div class="col-md-9">
+
+            <div class="row">
+
+                @foreach (var item in Model.Items)
+                {
+                    <div class="col-md-4 mb-4">
+
+                        <a href="@Url.Action("Details", "MenuItems", new { id = item.Id })" style="text-decoration:none;color:inherit;">
+                        <div class="card menu-card h-100 border-0 shadow-sm">
+                            <!-- Badge -->
+                            @* <span class="badge bg-warning position-absolute m-2">Hot</span> *@
+
+                            <span class="badge bg-warning position-absolute m-2 ">@label</span>
+                                <span class="badge position-absolute top-0 end-0 m-2 @(item.IsAvailable ? "bg-success" : "bg-secondary")">@(item.IsAvailable ? "Available" : "Out of Stock")</span>
+                            <!-- Image -->
+                            <img src="@(
+                                    string.IsNullOrEmpty(item.ImageUrl)
+                                    ? Url.Content("~/imgs/food.png")
+                                    : item.ImageUrl
+                                )" 
+                                 class="card-img-top"
+                                 style="height:200px; object-fit:cover;" />
+
+                            <!-- Body -->
+                             <div class="card-body text-center">
+
+                                <h6 class="fw-bold">@item.Name</h6>
+
+                                <p class="text-danger fw-bold">
+                                    $ @item.Price
+                                </p>
+
+                            </div> 
+
+                        </div>
+                        </a>
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>

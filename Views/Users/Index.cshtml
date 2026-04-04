@@ -1,4 +1,4 @@
-﻿@model List<FoodOrdering.DTOs.UserDTO>
+﻿@* @model List<FoodOrdering.DTOs.UserDTO>
 
 <h2>User List</h2>
 
@@ -43,4 +43,97 @@
         </tr>
     }
 
-</table>
+</table> *@
+
+@model List<FoodOrdering.DTOs.UserDTO>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold">👥 User Management</h3>
+
+        <a asp-action="Create" class="btn btn-success shadow-sm">
+            + Add User
+        </a>
+    </div>
+
+    <div class="card shadow-lg border-0">
+        <div class="card-body p-0">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        
+                        <th>Full Name</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var u in Model)
+                    {
+                        <tr>
+                            <!-- Avatar + Name -->
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="@(Url.Content("~/imgs/avata.jpg"))"
+                                         class="rounded-circle me-2"
+                                         width="40" height="40" />
+
+                                    <span class="fw-semibold">@u.FullName</span>
+                                </div>
+                            </td>
+
+                            <td class="text-muted">@u.Username</td>
+
+                            <!-- Role Badge -->
+                            <td>
+                                @if (u.Role == "Admin")
+                                {
+                                    <span class="badge bg-danger">Admin</span>
+                                }
+                                else if (u.Role == "Manager")
+                                {
+                                    <span class="badge bg-primary">Manager</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Staff</span>
+                                }
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="text-center">
+                                <a asp-action="Details"
+                                       asp-route-id="@u.Id"
+                                       class="btn btn-sm btn-outline-info me-1">
+                                    Detail
+                                </a>
+
+                                <a asp-action="Edit"
+                                       asp-route-id="@u.Id"
+                                       class="btn btn-sm btn-outline-warning me-1">
+                                    Edit
+                                </a>
+
+                                <a asp-action="Delete"
+                                       asp-route-id="@u.Id"
+                                       class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
