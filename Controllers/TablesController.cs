@@ -24,9 +24,10 @@ namespace FoodOrdering.Controllers
         }
 
         // GET: Tables
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(TablesQuery query)
         {
-            return View(await _context.Tables.ToListAsync());
+            var reslut = await _tablesService.GetAllTablesAsync(query);
+            return View(reslut);
         }
 
         // GET: Tables/Details/5
@@ -37,8 +38,7 @@ namespace FoodOrdering.Controllers
                 return NotFound();
             }
 
-            var tables = await _context.Tables
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var tables = await _tablesService.GetTableByIdAsync(id.Value);
             if (tables == null)
             {
                 return NotFound();
@@ -72,7 +72,7 @@ namespace FoodOrdering.Controllers
                 return NotFound();
             }
 
-            var tables = await _context.Tables.FindAsync(id);
+            var tables = await _tablesService.GetTableByIdAsync(id.Value);
             if (tables == null)
             {
                 return NotFound();
@@ -123,8 +123,7 @@ namespace FoodOrdering.Controllers
                 return NotFound();
             }
 
-            var tables = await _context.Tables
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var tables = await _tablesService.GetTableByIdAsync(id.Value);
             if (tables == null)
             {
                 return NotFound();
@@ -133,18 +132,21 @@ namespace FoodOrdering.Controllers
             return View(tables);
         }
 
+        [HttpPost, ActionName("ReCreateQaCode")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReCreateQaCode(int id)
+        {
+            await _tablesService.RecreateQACode(id);
+
+            return RedirectToAction(nameof(Edit), new { id = id });
+        }
+
         // POST: Tables/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var tables = await _context.Tables.FindAsync(id);
-            if (tables != null)
-            {
-                _context.Tables.Remove(tables);
-            }
-
-            await _context.SaveChangesAsync();
+            var tables = await _tablesService.DeleteTableAsync(id);
             return RedirectToAction(nameof(Index));
         }
 

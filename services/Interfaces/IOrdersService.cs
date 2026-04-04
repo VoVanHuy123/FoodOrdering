@@ -1,4 +1,5 @@
 ﻿using FoodOrdering.DTOs;
+using FoodOrdering.Models;
 
 namespace FoodOrdering.services.Interfaces
 {
@@ -12,5 +13,6 @@ namespace FoodOrdering.services.Interfaces
 
         Task<OrderEditDTO?> GetEditAsync(int id);
         Task UpdateAsync(OrderEditDTO dto);
+        Task UpdateOrdersUpdateTimeByMenuItemNotAvailableAsync(int menuItemId,bool isErrorUpdate);
     }
 }

@@ -118,6 +118,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapHub<OrderHub>("/orderHub");
+app.MapHub<MenuItemHub>("/menuItemHub");
 //RouteConfig.RegisterRoutes(app);
 app.MapStaticAssets();
 

@@ -1,36 +1,112 @@
-﻿@model FoodOrdering.Models.Tables
+﻿@model FoodOrdering.DTOs.TableDTO
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Table Details";
 }
 
-<h1>Details</h1>
+<div class="container mt-2 mb-4">
 
-<div>
-    <h4>Tables</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TableNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TableNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.QRCode)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.QRCode)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <div class="card shadow-lg border-0">
+
+        <!-- HEADER -->
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">
+                🍽 Table @Model.TableNumber
+            </h3>
+
+            @{
+                var statusClass =
+                    Model.Status == "Available" ? "bg-success" :
+                    Model.Status == "Occupied" ? "bg-danger" :
+                    Model.Status == "Reserved" ? "bg-warning text-dark" :
+                    "bg-secondary";
+            }
+
+            <span id="table-status" class="badge @statusClass fs-6 px-3 py-2">
+                @Model.Status
+            </span>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body">
+
+            <div class="row align-items-center">
+
+                <!-- LEFT INFO -->
+                <div class="col-md-6">
+
+                    <h5 class="fw-bold mb-3">Table Information</h5>
+
+                    <p>
+                        <strong>Table Number:</strong><br />
+                        <span class="fs-5">@Model.TableNumber</span>
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong><br />
+                        <span id="table-status-body" class="badge @statusClass">
+                            @Model.Status
+                        </span>
+                    </p>
+
+                </div>
+
+                <!-- QR CODE -->
+                <div class="col-md-6 text-center">
+
+                    <h5 class="fw-bold mb-3">QR Code</h5>
+
+                    @if (!string.IsNullOrEmpty(Model.QRCode))
+                    {
+                        <img src="@Model.QRCode"
+                             class="img-fluid rounded shadow"
+                             style="max-height:250px;" />
+
+                        <p class="text-muted mt-2">
+                            Scan to open menu
+                        </p>
+                    }
+                    else
+                    {
+                        <span class="text-danger">
+                            No QR Code available
+                        </span>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="card-footer bg-white border-0">
+
+            <div class="d-flex justify-content-between">
+
+                <a asp-action="Index"
+                       class="btn btn-outline-secondary">
+                    ← Back
+                </a>
+
+                <div>
+                    <a asp-action="Edit"
+                           asp-route-id="@Model.Id"
+                           class="btn btn-warning">
+                        Edit
+                    </a>
+
+                    <a asp-action="Delete"
+                           asp-route-id="@Model.Id"
+                           class="btn btn-danger">
+                        Delete
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>

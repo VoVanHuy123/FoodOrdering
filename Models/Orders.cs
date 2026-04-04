@@ -8,6 +8,8 @@
         public Tables? Table { get; set; }
 
         public DateTime OrderTime { get; set; }
+        public DateTime? UpdateTime { get; set; }
+        public bool IsError { get; set; }
         public string? Status { get; set; }
         public decimal TotalAmount { get; set; }
         public string? Note { get; set; }

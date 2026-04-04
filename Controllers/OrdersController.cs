@@ -79,6 +79,7 @@ namespace FoodOrdering.Controllers
                 OrderItems = dto.Items.Select(i => new OrderItems
                 {
                     MenuItemId = i.MenuItemId,
+                    
                     Quantity = i.Quantity,
                     Price = _context.MenuItems.First(m => m.Id == i.MenuItemId).Price
                 }).ToList()

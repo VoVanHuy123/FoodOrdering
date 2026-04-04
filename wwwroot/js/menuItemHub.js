@@ -1,0 +1,127 @@
+﻿// ===============================
+// SIGNALR MENU ITEM HUB
+// ===============================
+
+// connect hub
+const orderConnection = new signalR.HubConnectionBuilder()
+    .withUrl("/menuItemHub")
+    .withAutomaticReconnect()
+    .build();
+
+
+
+// ===============================
+// RECEIVE NEW ORDER
+// ===============================
+
+orderConnection.on("ReceiveNewOrder", function (order) {
+
+    console.log("New Order:", order);
+
+    const list = document.getElementById("orders");
+    console.log("Orders List Element:", list);
+    if (!list) return;
+
+    const statusClass =
+        order.status === "Completed"
+            ? "bg-success"
+            : order.status === "Pending"
+                ? "bg-warning text-dark"
+                : "bg-secondary";
+
+    const html = `
+        <div class="col-md-6 col-lg-4 mb-4" id="order-${order.id}">
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+                        <h5 class="fw-bold">
+                            🍽 Table ${order.tableId}
+                        </h5>
+
+                        <span class="badge ${statusClass}">
+                            ${order.status}
+                        </span>
+                    </div>
+
+                    <hr/>
+
+                    <p>
+                        <strong>Time:</strong><br/>
+                        ${new Date(order.orderTime)
+            .toLocaleString()}
+                    </p>
+
+                    <p>
+                        <strong>Total:</strong><br/>
+                        <span class="text-danger fw-bold fs-5">
+                            ${order.totalAmount.toLocaleString()} VNĐ
+                        </span>
+                    </p>
+
+                </div>
+
+                <div class="card-footer bg-white border-0">
+                    <div class="d-flex justify-content-between">
+
+                        <a href="/Orders/Details/${order.id}"
+                           class="btn btn-outline-primary btn-sm">
+                            Details
+                        </a>
+
+                        <a href="/Orders/Edit/${order.id}"
+                           class="btn btn-outline-warning btn-sm">
+                            Edit
+                        </a>
+
+                        <a href="/Orders/Delete/${order.id}"
+                           class="btn btn-outline-danger btn-sm">
+                            Delete
+                        </a>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    `;
+
+    // ⭐ thêm order mới lên đầu list
+    list.insertAdjacentHTML("afterbegin", html);
+
+
+});
+
+
+// ===============================
+// UPDATE ORDER
+// ===============================
+orderConnection.on("OrderUpdated", function (order) {
+
+    const el = document.getElementById(`order-${order.id}`);
+
+    if (el) {
+        el.innerHTML =
+            `Order #${order.id} - ${order.status}`;
+    }
+});
+
+
+// ===============================
+// DELETE ORDER
+// ===============================
+orderConnection.on("OrderDeleted", function (orderId) {
+
+    const el = document.getElementById(`order-${orderId}`);
+
+    if (el) el.remove();
+});
+
+// ===============================
+// START CONNECTION
+// ===============================
+orderConnection.start()
+    .then(() => console.log("✅ SignalR Connected"))
+    .catch(err => console.error(err));
+
