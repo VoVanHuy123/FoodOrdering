@@ -1,41 +1,59 @@
 ﻿@model FoodOrdering.DTOs.TableDTO
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Table";
 }
 
-<h1>Create Table</h1>
+<div class="container mt-2 mb-4">
 
-<hr />
+    <div class="card shadow border-0">
 
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">➕ Create New Table</h4>
+        </div>
 
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="card-body">
 
-            <div class="form-group">
-                <label asp-for="TableNumber"></label>
-                <input asp-for="TableNumber" class="form-control" />
-                <span asp-validation-for="TableNumber" class="text-danger"></span>
-            </div>
+            <form asp-action="Create">
 
-            <div class="form-group">
-                <label asp-for="Status"></label>
-                <input asp-for="Status" class="form-control" />
-                <span asp-validation-for="Status" class="text-danger"></span>
-            </div>
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger"></div>
 
-            <br />
+                <div class="mb-3">
+                    <label asp-for="TableNumber" class="form-label fw-bold"></label>
+                    <input asp-for="TableNumber" class="form-control"
+                           placeholder="Enter table number..." />
+                    <span asp-validation-for="TableNumber"
+                          class="text-danger"></span>
+                </div>
 
-            <input type="submit" value="Create" class="btn btn-primary" />
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label fw-bold"></label>
+                    <select asp-for="Status"
+                                    class="form-select form-select-lg">
 
-        </form>
+                                <option value="Available">Available</option>
+                    </select>
+                    @* <input asp-for="Status" class="form-control"
+                           placeholder="Available / Occupied..." />
+                    <span asp-validation-for="Status"
+                          class="text-danger"></span> *@
+                </div>
+
+                <hr />
+
+                <button type="submit" class="btn btn-success">
+                    ✔ Create
+                </button>
+
+                <a asp-action="Index" class="btn btn-secondary">
+                    ← Back to List
+                </a>
+
+            </form>
+
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

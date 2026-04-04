@@ -1,4 +1,5 @@
-﻿using FoodOrdering.Context;
+﻿using CloudinaryDotNet.Actions;
+using FoodOrdering.Context;
 using FoodOrdering.DTOs;
 using FoodOrdering.Hubs;
 using FoodOrdering.Models;
@@ -48,7 +49,15 @@ namespace FoodOrdering.services.Implementations
 
             // ===== PAGINATION =====
             var data = await orders
-                .OrderByDescending(o => o.OrderTime)
+                //.OrderByDescending(o => o.OrderTime)
+                .OrderBy(o =>
+        o.Status == "Preparing" ? 1 :
+        o.Status == "Pending" ? 2 :
+        o.Status == "Completed" ? 3 :
+        o.Status == "Cancelled" ? 4 : 5)
+                .ThenByDescending(o => o.OrderTime)
+                .ThenByDescending(o => o.UpdateTime)    // 2. UpdateTime
+                
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .Select(o => new OrderDTO
@@ -56,6 +65,7 @@ namespace FoodOrdering.services.Implementations
                     Id = o.Id,
                     TableId = o.TableId,
                     OrderTime = o.OrderTime,
+                    IsError = o.IsError,
                     Status = o.Status,
                     TotalAmount = o.TotalAmount,
                     Note = o.Note
@@ -89,9 +99,10 @@ namespace FoodOrdering.services.Implementations
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
                 Note = order.Note,
-                Items = order.OrderItems.Select(i => new OrderItemDTO
+                Items = order.OrderItems.Select( i => new OrderItemDTO
                 {
                     MenuItemId = i.MenuItemId,
+                    IsAvailable = i.MenuItem.IsAvailable,
                     MenuItemName = i.MenuItem != null ? i.MenuItem.Name : null,
                     ImageUrl = i.MenuItem.ImageUrl,
                     Quantity = i.Quantity,
@@ -99,6 +110,30 @@ namespace FoodOrdering.services.Implementations
                     Note = i.Note
                 }).ToList()
             };
+        }
+        //================== GET BY MENU ITEM ID =================
+        public async Task UpdateOrdersUpdateTimeByMenuItemNotAvailableAsync(int menuItemId,bool isErrorUpdate)
+        {
+            List<int> orderIds = new List<int>();
+            var orders = await _context.Orders
+                .Where(o =>
+                    (o.Status == "Pending" || o.Status == "Preparing" && o.IsError == !isErrorUpdate) &&
+                    o.OrderItems.Any(i => i.MenuItemId == menuItemId)
+                )
+                .ToListAsync();
+
+            foreach (var order in orders)
+            {
+                orderIds.Add(order.Id);
+                order.UpdateTime = DateTime.Now;
+                order.IsError = isErrorUpdate;
+            }
+
+            await _context.SaveChangesAsync();
+            await _hub.Clients.All.SendAsync("MenuItemNotAvailable", new
+            {
+                orderIds
+            });
         }
 
         // ================= CREATE =================
@@ -109,6 +144,9 @@ namespace FoodOrdering.services.Implementations
             {
                 throw new Exception("TableId không tồn tại");
             }
+            var table = await _context.Tables.FindAsync(dto.TableId);
+            table.Status = "Occupied";
+             await _context.SaveChangesAsync();
             var order = new Orders
             {
                 TableId = dto.TableId,
@@ -129,11 +167,28 @@ namespace FoodOrdering.services.Implementations
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
+            // Recalculate total
+            order.TotalAmount = await _context.OrderItems
+                .Where(i => i.OrderId == order.Id)
+                .SumAsync(i => i.Quantity * i.Price);
+
+            // CHECK OUT OF STOCK
+            var menuItemIds = await _context.OrderItems
+                .Where(i => i.OrderId == order.Id)
+                .Select(i => i.MenuItemId)
+                .ToListAsync();
+
+            order.IsError = await _context.MenuItems
+                .AnyAsync(m => menuItemIds.Contains(m.Id) && !m.IsAvailable);
+
+            await _context.SaveChangesAsync();
+
             dto.Id = order.Id;
             dto.OrderTime = order.OrderTime;
             dto.TotalAmount = order.TotalAmount;
+            dto.IsError = order.IsError;
 
-            
+
             // SIGNALR REALTIME
             await _hub.Clients.All.SendAsync("ReceiveNewOrder", new
             {
@@ -141,8 +196,17 @@ namespace FoodOrdering.services.Implementations
                 order.TableId,
                 order.Status,
                 order.TotalAmount,
-                order.OrderTime
+                order.OrderTime,
+                order.IsError
             });
+            await _hub.Clients.All.SendAsync("TableOccupied", new
+            {
+                table.Id,
+                table.TableNumber,
+                table.Status
+
+            });
+
 
             return dto;
         }
@@ -150,7 +214,18 @@ namespace FoodOrdering.services.Implementations
         // ================= UPDATE =================
         public async Task<bool> UpdateAsync(int id, OrderDTO dto)
         {
-            var order = await _context.Orders
+            var table = await _context.Tables.FindAsync(dto.TableId);
+            if (table == null)
+            {
+                throw new Exception("TableId không tồn tại");
+            }
+            if (dto.Status == "Completed" || dto.Status == "Canceled")
+            {
+                table.Status = "Available";
+            }
+
+
+                var order = await _context.Orders
                 .Include(o => o.OrderItems)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
@@ -159,11 +234,12 @@ namespace FoodOrdering.services.Implementations
             order.TableId = dto.TableId;
             order.Status = dto.Status;
             order.Note = dto.Note;
+            order.UpdateTime = DateTime.Now;
 
-            // Xóa items cũ
+            // Remove old items
             _context.OrderItems.RemoveRange(order.OrderItems);
 
-            // Thêm items mới
+            // Add new items
             order.OrderItems = dto.Items?.Select(i => new OrderItems
             {
                 MenuItemId = i.MenuItemId,
@@ -174,12 +250,29 @@ namespace FoodOrdering.services.Implementations
 
             order.TotalAmount = order.OrderItems.Sum(i => i.Price * i.Quantity);
 
+            
+
+            await _context.SaveChangesAsync();
+            //  CHECK OUT OF STOCK
+            var menuItemIds = order.OrderItems
+                .Select(i => i.MenuItemId)
+                .ToList();
+
+            order.IsError = await _context.MenuItems
+                .AnyAsync(m => menuItemIds.Contains(m.Id) && !m.IsAvailable);
             await _context.SaveChangesAsync();
             await _hub.Clients.All.SendAsync("OrderUpdated", new
             {
                 order.Id,
                 order.Status,
                 order.TotalAmount
+            });
+            await _hub.Clients.All.SendAsync("TableOccupied", new
+            {
+                table.Id,
+                table.TableNumber,
+                table.Status
+
             });
             return true;
         }
@@ -221,6 +314,7 @@ namespace FoodOrdering.services.Implementations
                 {
                     Id = i.Id,
                     MenuItemId = i.MenuItemId,
+                    IsAvailable = i.MenuItem.IsAvailable,
                     MenuItemName = i.MenuItem.Name,
                     Price = i.Price,
                     Quantity = i.Quantity,
@@ -231,6 +325,17 @@ namespace FoodOrdering.services.Implementations
 
         public async Task UpdateAsync(OrderEditDTO dto)
         {
+
+            var table = await _context.Tables.FindAsync(dto.TableId);
+            if (table == null)
+            {
+                throw new Exception("TableId không tồn tại");
+            }
+            if (dto.Status == "Completed" || dto.Status == "Canceled")
+            {
+                table.Status = "Available";
+            }
+
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
                 .FirstAsync(o => o.Id == dto.Id);
@@ -238,6 +343,7 @@ namespace FoodOrdering.services.Implementations
             order.TableId = dto.TableId;
             order.Status = dto.Status;
             order.Note = dto.Note;
+            order.UpdateTime = DateTime.Now;
 
             if (dto.Items != null)
             {
@@ -280,6 +386,45 @@ namespace FoodOrdering.services.Implementations
                 .SumAsync(i => i.Quantity * i.Price);
 
             await _context.SaveChangesAsync();
+            // Recalculate total
+            order.TotalAmount = await _context.OrderItems
+                .Where(i => i.OrderId == order.Id)
+                .SumAsync(i => i.Quantity * i.Price);
+
+                    // ✅ CHECK OUT OF STOCK
+                    var menuItemIds = await _context.OrderItems
+                        .Where(i => i.OrderId == order.Id)
+                        .Select(i => i.MenuItemId)
+                        .ToListAsync();
+
+            order.IsError = await _context.MenuItems
+                .AnyAsync(m => menuItemIds.Contains(m.Id) && !m.IsAvailable);
+
+            await _hub.Clients.All.SendAsync("TableOccupied", new
+            {
+                table.Id,
+                table.TableNumber,
+                table.Status
+
+            });
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> UpdateOrderUpdateTimeAsync(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            order.UpdateTime = DateTime.Now;
+            _context.SaveChangesAsync();
+            await _hub.Clients.All.SendAsync("MenuItemNotAvailable", new
+            {
+                order.Id,
+                order.TableId,
+                order.Status,
+                order.TotalAmount,
+                order.OrderTime
+            });
+            return true;
         }
     }
 }

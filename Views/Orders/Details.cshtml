@@ -96,7 +96,7 @@
                     {
                         @foreach (var item in Model.Items)
                         {
-                            <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                            <div class="d-flex align-items-center mb-4 border-bottom p-3 @((item.IsAvailable == false) ? "border-warning bg-warning-subtle" : "")">
 
                                 <!-- IMAGE -->
                                 <img src="@Url.Content(item.ImageUrl ?? "~/imgs/food.png")"

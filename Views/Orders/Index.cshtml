@@ -3,6 +3,15 @@
 @{
     var query = ViewBag.Query as FoodOrdering.DTOs.OrderQuery;
 }
+ <style>
+    .card {
+        transition: 0.3s;
+        border-radius: 10px;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    } 
+</style> 
 
 <div class="container mt-4">
 
@@ -29,7 +38,10 @@
             <select name="Status" class="form-select">
 
                 <option value="">All Status</option>
-
+                <option value="Preparing"
+                        selected="@(query?.Status == "Preparing")">
+                    Preparing
+                </option>
                 <option value="Pending"
                         selected="@(query?.Status == "Pending")">
                     Pending
@@ -65,7 +77,8 @@
             {
                 <div class="col-md-6 col-lg-4 mb-4">
 
-                    <div class="card shadow-sm border-0 h-100">
+                    <div class="card shadow-sm border-0 h-100
+                        @(order.IsError ? "border-warning bg-warning-subtle" : "")">
 
                         <div class="card-body">
 
@@ -85,6 +98,14 @@
                                 </span>
 
                             </div>
+                            @if (order.IsError)
+                {
+                            <div class="mt-2">
+                                <span class="badge bg-danger">
+                                    ⚠ Has item out of stock
+                                </span>
+                            </div>
+                }
 
                             <hr />
 
@@ -182,4 +203,4 @@
 </div>
 @section Scripts {
     <script src="~/js/orderHub.js"></script>
-}
+} 

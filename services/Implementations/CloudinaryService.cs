@@ -1,21 +1,32 @@
-﻿using CloudinaryDotNet;
+﻿using System.Drawing;
+using System.Drawing.Imaging;
+using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using FoodOrdering.services.Interfaces;
+using FoodOrdering.Settings;
+using Microsoft.Extensions.Options;
 using QRCoder;
-using System.Drawing;
-using System.Drawing.Imaging;
 namespace FoodOrdering.services.Implementations
 {
     public class CloudinaryService : ICloudinaryService
     {
         private readonly Cloudinary _cloudinary;
 
-        public CloudinaryService(IConfiguration config)
+        public CloudinaryService(IOptions<CloudinarySettings> config)
         {
+            var settings = config.Value;
+
+            if (string.IsNullOrEmpty(settings.CloudName) ||
+                string.IsNullOrEmpty(settings.ApiKey) ||
+                string.IsNullOrEmpty(settings.ApiSecret))
+            {
+                throw new Exception("Cloudinary settings is missing!");
+            }
+
             var account = new Account(
-                config["CloudinarySettings:CloudName"],
-                config["CloudinarySettings:ApiKey"],
-                config["CloudinarySettings:ApiSecret"]
+                settings.CloudName,
+                settings.ApiKey,
+                settings.ApiSecret
             );
 
             _cloudinary = new Cloudinary(account);

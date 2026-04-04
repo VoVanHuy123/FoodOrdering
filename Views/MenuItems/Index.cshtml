@@ -123,12 +123,13 @@
                 {
                     <div class="col-md-4 mb-4">
 
+                        <a href="@Url.Action("Details", "MenuItems", new { id = item.Id })" style="text-decoration:none;color:inherit;">
                         <div class="card menu-card h-100 border-0 shadow-sm">
-
                             <!-- Badge -->
                             @* <span class="badge bg-warning position-absolute m-2">Hot</span> *@
 
-                            <span class="badge bg-warning position-absolute m-2">@label</span>
+                            <span class="badge bg-warning position-absolute m-2 ">@label</span>
+                                <span class="badge position-absolute top-0 end-0 m-2 @(item.IsAvailable ? "bg-success" : "bg-secondary")">@(item.IsAvailable ? "Available" : "Out of Stock")</span>
                             <!-- Image -->
                             <img src="@(
                                     string.IsNullOrEmpty(item.ImageUrl)
@@ -150,7 +151,7 @@
                             </div> 
 
                         </div>
-
+                        </a>
                     </div>
                 }
 

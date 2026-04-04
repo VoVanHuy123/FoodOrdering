@@ -7,4 +7,9 @@
         public string? QRCode { get; set; }
         public string? Status { get; set; }
     }
+    public class TablesQuery
+    {
+        public string? Status { get; set; }
+        public int? TableNumber { get; set; }
+    }
 }

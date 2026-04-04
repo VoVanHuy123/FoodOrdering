@@ -2,26 +2,20 @@
 using FoodOrdering.DTOs;
 using FoodOrdering.Models;
 using FoodOrdering.services.Interfaces;
+using FoodOrdering.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 public class MenuItemsService : IMenuItemsService
 {
     private readonly FoodOrderingContext _context;
+    private readonly ICategoriesService _categoriesService;
 
-    public MenuItemsService(FoodOrderingContext context)
+    public MenuItemsService(FoodOrderingContext context, ICategoriesService categoriesService)
     {
         _context = context;
+        _categoriesService = categoriesService;
     }
-    public static string RemoveDiacritics(string text)
-    {
-        var normalized = text.Normalize(System.Text.NormalizationForm.FormD);
-        var chars = normalized
-            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c)
-                != System.Globalization.UnicodeCategory.NonSpacingMark)
-            .ToArray();
-
-        return new string(chars).Normalize(System.Text.NormalizationForm.FormC);
-    }
+    
 
     // ================= GET ALL =================
     public async Task<List<MenuItemDTO>> GetAllAsync() 
@@ -41,20 +35,7 @@ public class MenuItemsService : IMenuItemsService
             .AsQueryable();
 
         // ===== SEARCH NAME =====
-        //if (!string.IsNullOrEmpty(query.Search))
-        //{
-        //    menuQuery = menuQuery
-        //        .Where(x => x.Name!.Contains(query.Search));
-        //}
-        //if (!string.IsNullOrEmpty(query.Search))
-        //{
-        //    var keyword = RemoveDiacritics(query.Search.ToLower());
-
-        //    menuQuery = menuQuery
-        //        .AsEnumerable() 
-        //        .Where(x => RemoveDiacritics(x.Name!.ToLower()).Contains(keyword))
-        //        .AsQueryable();
-        //}
+        
         if (!string.IsNullOrEmpty(query.Search))
         {
             menuQuery = menuQuery.Where(x =>
@@ -111,6 +92,10 @@ public class MenuItemsService : IMenuItemsService
             Id = item.Id,
             Name = item.Name,
             Price = item.Price,
+            IsAvailable = item.IsAvailable,
+            Description = item.Description,
+            ImageUrl = item.ImageUrl,
+            CategoryName = (await _context.Categories.FindAsync(item.CategoryId))?.Name,
             CategoryId = item.CategoryId
         };
     }
@@ -118,12 +103,15 @@ public class MenuItemsService : IMenuItemsService
     // ================= CREATE =================
     public async Task<MenuItemDTO> CreateAsync(MenuItemDTO dto)
     {
-        var menuItem = new MenuItems
-        {
-            Name = dto.Name,
-            Price = dto.Price,
-            CategoryId = dto.CategoryId
-        };
+        var menuItem = new MenuItems(dto);
+        //{
+        //    Name = dto.Name,
+        //    Price = dto.Price,
+        //    CategoryId = dto.CategoryId,
+        //    IsAvailable = dto.IsAvailable,
+        //    Description = dto.Description,
+        //    ImageUrl = dto.ImageUrl,
+        //};
 
         _context.MenuItems.Add(menuItem);
         await _context.SaveChangesAsync();
@@ -133,18 +121,37 @@ public class MenuItemsService : IMenuItemsService
     }
 
     // ================= UPDATE =================
-    public async Task<bool> UpdateAsync(int id, MenuItemDTO dto)
+    public async Task<Dictionary<string,bool>> UpdateAsync(int id, MenuItemDTO dto)
     {
         var item = await _context.MenuItems.FindAsync(id);
 
-        if (item == null) return false;
-
-        item.Name = dto.Name;
-        item.Price = dto.Price;
-        item.CategoryId = dto.CategoryId;
+        if (item == null) return new Dictionary<string, bool>
+        {
+            { "IsUpdate", false },
+            { "IsUpdateAvailable", false }
+        };
+        bool isUpdateOrderError = false;
+        bool isUpdateAvailable = false;
+        if (item.IsAvailable == true && item.IsAvailable != dto.IsAvailable)
+        {
+            isUpdateOrderError = true;
+            isUpdateAvailable = true;
+        }
+        if(item.IsAvailable == false && item.IsAvailable != dto.IsAvailable)
+        {
+            isUpdateOrderError = false;
+            isUpdateAvailable = true;
+        }
+        
+        item.Update(dto);
 
         await _context.SaveChangesAsync();
-        return true;
+        return new Dictionary<string, bool>
+        {
+            {  "IsUpdate", true  },
+            { "isUpdateOrderError", isUpdateOrderError },
+            {"isUpdateAvailable", isUpdateAvailable }
+        };
     }
 
     // ================= DELETE =================
@@ -159,4 +166,5 @@ public class MenuItemsService : IMenuItemsService
 
         return true;
     }
+    
 }

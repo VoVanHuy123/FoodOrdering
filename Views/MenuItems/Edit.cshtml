@@ -1,59 +1,229 @@
-﻿@model FoodOrdering.Models.MenuItems
+﻿@* 
+
+@model FoodOrdering.DTOs.MenuItemDTO
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Menu Item";
 }
 
-<h1>Edit</h1>
+<div class="container mt-4 mb-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
 
-<h4>MenuItems</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+            <div class="card shadow-sm border-0">
+                <div class="row g-0">
+
+                    <!-- Image bên trái -->
+                    <div class="col-md-5">
+                        <img id="previewImage"
+                             src="@(string.IsNullOrEmpty(Model.ImageUrl)
+                                                                                         ? Url.Content("~/imgs/food.png")
+                                                                                         : Model.ImageUrl)"
+                             class="img-fluid h-100 w-100"
+                             style="object-fit:cover; border-top-left-radius:10px; border-bottom-left-radius:10px;" />
+                    </div>
+
+                    <!-- Form bên phải -->
+                    <div class="col-md-7">
+                        <div class="card-body d-flex flex-column h-100">
+
+                            <h3 class="fw-bold mb-3">Edit Menu Item</h3>
+
+                            <form asp-action="Edit">
+                                <input type="hidden" asp-for="Id" />
+
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                                <!-- Name -->
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label"></label>
+                                    <input asp-for="Name" class="form-control" />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label"></label>
+                                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+
+                                <!-- Price -->
+                                <div class="mb-3">
+                                    <label asp-for="Price" class="form-label"></label>
+                                    <input asp-for="Price" class="form-control" />
+                                    <span asp-validation-for="Price" class="text-danger"></span>
+                                </div>
+
+                                <!-- Image URL -->
+                                <div class="mb-3">
+                                    <label asp-for="ImageUrl" class="form-label"></label>
+                                    <input asp-for="ImageUrl" class="form-control" id="imageInput" />
+                                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                                </div>
+
+                                <!-- Category -->
+                                <div class="mb-3">
+                                    <label asp-for="CategoryId" class="form-label"></label>
+                                    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId"></select>
+                                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                                </div>
+
+                                <!-- Availability -->
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" asp-for="IsAvailable" />
+                                    <label class="form-check-label">
+                                        Available
+                                    </label>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="mt-auto d-flex justify-content-end">
+                                    <a asp-action="Index" class="btn btn-secondary me-2">Back</a>
+                                    <button type="submit" class="btn btn-warning">Save</button>
+                                </div>
+
+                            </form>
+
+                        </div>
+                    </div>
+
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Price" class="control-label"></label>
-                <input asp-for="Price" class="form-control" />
-                <span asp-validation-for="Price" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ImageUrl" class="control-label"></label>
-                <input asp-for="ImageUrl" class="form-control" />
-                <span asp-validation-for="ImageUrl" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsAvailable" /> @Html.DisplayNameFor(model => model.IsAvailable)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Preview image khi nhập URL
+        document.getElementById("imageInput").addEventListener("input", function () {
+            const url = this.value;
+            document.getElementById("previewImage").src = url || "/imgs/food.png";
+        });
+    </script>
+}
+
+<style>
+    .btn {
+        min-width: 120px;
+    }
+
+    @@media (max-width: 768px) {
+        .card img {
+            border-radius: 10px 10px 0 0 !important;
+        }
+    }
+</style> *@
+@model FoodOrdering.DTOs.MenuItemDTO
+
+@{
+    ViewData["Title"] = "Edit Menu Item";
+}
+
+<div class="container mt-2 mb-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+
+            <div class="card shadow-sm border-0">
+                <div class="row g-0">
+
+                    <!-- IMAGE -->
+                    <div class="col-md-5">
+                        <img id="previewImage"
+                             src="@(string.IsNullOrEmpty(Model.ImageUrl)
+                            ? Url.Content("~/imgs/food.png")
+                            : Model.ImageUrl)"
+                             class="img-fluid h-100 w-100"
+                             style="object-fit:cover;" />
+                    </div>
+
+                    <!-- FORM -->
+                    <div class="col-md-7">
+                        <div class="card-body d-flex flex-column h-100">
+
+                            <form asp-action="Edit" enctype="multipart/form-data">
+                                <input type="hidden" asp-for="Id" />
+                                <input type="hidden" asp-for="ImageUrl" />
+
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                                <!-- Name -->
+                                <div class="mb-3">
+                                    <label asp-for="Name"></label>
+                                    <input asp-for="Name" class="form-control" />
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-3">
+                                    <label asp-for="Description"></label>
+                                    <textarea asp-for="Description" class="form-control"></textarea>
+                                </div>
+
+                                <!-- Price -->
+                                <div class="mb-3">
+                                    <label asp-for="Price"></label>
+                                    <input asp-for="Price" class="form-control" />
+                                </div>
+
+                                <!-- Upload Image -->
+                                <div class="mb-3">
+                                    <label class="form-label">Upload Image</label>
+                                    <input asp-for="ImageFile" type="file" class="form-control" id="imageInput" />
+                                </div>
+
+                                <!-- Category -->
+                                <div class="mb-3">
+                                    @*     <label asp-for="CategoryId" class="form-label"></label>
+                                    @foreach (var c in ViewBag.Categories)
+                                    {
+                                        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId"></select>
+                                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                                        <li>
+                                            <a href="?CategoryId=@c.Id" class="menu-link">@c.Name</a>
+                                        </li>
+                                    } *@
+                                    <label asp-for="CategoryId"></label>
+                                    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId"></select>
+                                </div>
+
+                                <!-- Availability -->
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" asp-for="IsAvailable" />
+                                    <label class="form-check-label">Available</label>
+                                </div>
+
+                                <!-- BUTTON -->
+                                <div class="mt-auto d-flex justify-content-end">
+                                    <a asp-action="Index" class="btn btn-secondary me-2">Back</a>
+                                    <button type="submit" class="btn btn-warning">Save</button>
+                                </div>
+
+                            </form>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Preview ảnh khi chọn file
+        document.getElementById("imageInput").addEventListener("change", function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById("previewImage").src = URL.createObjectURL(file);
+            }
+        });
+    </script>
 }
