@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace FoodOrdering.ControllerAPIs.API
 {
     [Route("api/tables")]
-    [ApiController]
     [AllowAnonymous]
     public class TablesControllerAPI : Controller
     {
