@@ -75,7 +75,7 @@
         {
             @foreach (var order in Model.Items)
             {
-                <div class="col-md-6 col-lg-4 mb-4">
+                <div id="order-@order.Id" class="col-md-6 col-lg-4 mb-4">
 
                     <div class="card shadow-sm border-0 h-100
                         @(order.IsError ? "border-warning bg-warning-subtle" : "")">

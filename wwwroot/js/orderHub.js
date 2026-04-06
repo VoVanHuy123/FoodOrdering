@@ -212,6 +212,7 @@ orderConnection.on("OrderUpdated", function (order) {
     console.log("Order Updated:", order);
 
     const orderCard = document.getElementById(`order-${order.id}`);
+    console.log("Order card:", orderCard);
 
     if (orderCard) {
         const badge = orderCard.querySelector(".badge");
@@ -230,7 +231,9 @@ orderConnection.on("OrderUpdated", function (order) {
 
         orderCard.firstElementChild.classList.remove("border-danger", "border", "border-3");
 
+        console.log("Is order error?", order.status);
         if (order.status === "Completed") {
+            console.log("Order completed, show success toast");
             toastr.success(`Đơn hàng #${order.id} đã thanh toán thành công qua VNPAY!`, "💰 Đã nhận tiền");
         }
     }
