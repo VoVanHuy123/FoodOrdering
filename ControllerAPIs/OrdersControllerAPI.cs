@@ -112,22 +112,10 @@ namespace FoodOrdering.ControllerAPIs
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusRequest req)
         {
-            // Get current order
-            var order = await _ordersService.GetByIdAsync(id);
-            if (order == null)
-                return NotFound($"Không tìm thấy đơn hàng với Id = {id}");
-
-            // Update status
-            order.Status = req.Status;
-            var result = await _ordersService.UpdateAsync(id, order);
+           var result = await _ordersService.UpdateOrderStatusAsync(id, req.Status);
+    
             if (!result)
-                return BadRequest("Cập nhật thất bại.");
-
-            // Real-time notify all clients about the status change
-            await _hubContext.Clients.All.SendAsync("OrderUpdated", new {
-                id = order.Id,
-                status = order.Status
-            });
+                return NotFound($"Không tìm thấy đơn hàng với Id = {id} hoặc cập nhật thất bại.");
 
             return Ok(new { success = true, message = "Cập nhật thành công" });
         }
