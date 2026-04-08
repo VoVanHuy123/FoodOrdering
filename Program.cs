@@ -2,6 +2,8 @@ using DotNetEnv;
 using FoodOrdering.App_Start;
 using FoodOrdering.Context;
 using FoodOrdering.Extentions;
+using FoodOrdering.Services.Interfaces;
+using FoodOrdering.Services.Implementations;
 using FoodOrdering.Hubs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using FoodOrdering.Settings;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +28,7 @@ builder.Services.AddDbContext<FoodOrderingContext>(options =>
     options.UseSqlServer(defaultConnection)
 );
 
-// CloudinarySettings
+//CloudinarySettings
 builder.Services.Configure<CloudinarySettings>(options =>
 {
     options.CloudName = cloudName;
@@ -35,7 +38,6 @@ builder.Services.Configure<CloudinarySettings>(options =>
 
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplicationServices();
 builder.Services.AddSession();
@@ -53,7 +55,10 @@ builder.Services.AddControllersWithViews(options =>
         .Build();
 
     options.Filters.Add(new AuthorizeFilter(policy));
-});
+}).AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+}); ;
 
 // ===== Add Swagger =====
 builder.Services.AddEndpointsApiExplorer();

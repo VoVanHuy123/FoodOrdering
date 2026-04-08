@@ -18,6 +18,6 @@ namespace FoodOrdering.Context
         public DbSet<Tables> Tables { get; set; }
 
         public DbSet<Payments> Payments { get; set; }
-    
+
     }
 }

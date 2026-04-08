@@ -1,0 +1,197 @@
+﻿@{
+    ViewData["Title"] = "Reports Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Reports Dashboard</h2>
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <label class="form-label">Select Time Range</label>
+        <select id="timeRange" class="form-select">
+            <option value="day">1 Day</option>
+            <option value="month" selected>1 Month</option>
+            <option value="quarter">1 Quarter</option>
+            <option value="year">1 Year</option>
+            <option value="custom">Custom</option>
+        </select>
+    </div>
+
+    <div class="col-md-3 d-none" id="customRangeDiv">
+        <label class="form-label">From</label>
+        <input type="date" id="fromDate" class="form-control" />
+
+        <label class="form-label mt-1">To</label>
+        <input type="date" id="toDate" class="form-control" />
+    </div>
+
+    <div class="col-md-3 align-self-end">
+        <button id="btnLoad" class="btn btn-primary">Load Report</button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <h5>Revenue</h5>
+        <canvas id="revenueChart"></canvas>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <h5>Orders Count</h5>
+        <canvas id="ordersChart"></canvas>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h5>Top Foods</h5>
+        <canvas id="topFoodsChart"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+        console.log("Reports JS loaded");
+
+        // ===== FIX toggle =====
+        $("#timeRange").change(function () {
+            if ($(this).val() === "custom") {
+                $("#customRangeDiv").removeClass("d-none");
+            } else {
+                $("#customRangeDiv").addClass("d-none");
+            }
+        });
+
+        // trigger lần đầu
+        $("#timeRange").trigger("change");
+
+        // ===== FIX timezone =====
+        function toLocalISOString(date) {
+            const tzoffset = date.getTimezoneOffset() * 60000;
+            return new Date(date - tzoffset).toISOString().slice(0, -1);
+        }
+
+        $("#btnLoad").click(function () {
+
+            let from, to;
+            const range = $("#timeRange").val();
+            const now = new Date();
+
+            switch (range) {
+                case "day":
+                from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                to = now;
+                break;
+
+                case "month":
+                from = new Date(now.getFullYear(), now.getMonth(), 1);
+                to = now;
+                break;
+
+                case "quarter":
+                const q = Math.floor(now.getMonth() / 3);
+                from = new Date(now.getFullYear(), q * 3, 1);
+                to = now;
+                break;
+
+                case "year":
+                from = new Date(now.getFullYear(), 0, 1);
+                to = now;
+                break;
+
+                case "custom":
+                from = new Date($("#fromDate").val());
+                to = new Date($("#toDate").val());
+                break;
+            }
+
+            console.log("FROM:", from, "TO:", to);
+
+            loadRevenue(from, to);
+            loadOrders(from, to);
+            loadTopFoods(from, to);
+        });
+
+        function loadRevenue(from, to) {
+            $.getJSON("/api/ReportApi/Revenue", {
+                from: toLocalISOString(from),
+                to: toLocalISOString(to)
+                })
+            .done(function (data) {
+
+                console.log("Revenue:", data);
+                const labels = data.map(d => d.Label);
+                const values = data.map(d => d.Value);
+
+                if (window.revenueChartInstance) {
+                window.revenueChartInstance.destroy();
+                }
+
+                const ctx = document.getElementById("revenueChart").getContext("2d");
+
+                window.revenueChartInstance = new Chart(ctx, {
+                                                type: "line",
+                                                data: { labels, datasets: [{ label: "Revenue", data: values, 
+                                                                        borderColor: "#ff6384",
+                                                                        backgroundColor: "rgba(255,99,132,0.2)",
+                                                                        fill: true}]}});
+            })
+            .fail(err => console.error("Revenue API ERROR:", err));
+        }
+
+        function loadOrders(from, to) {
+            $.getJSON("/api/ReportApi/Orders", {
+                from: toLocalISOString(from),
+                to: toLocalISOString(to)
+            })
+            .done(function (data) {
+                console.log("Orders:", data);
+                const labels = data.map(d => d.Label);
+                const values = data.map(d => d.Value);
+                if (window.ordersChartInstance) {
+                window.ordersChartInstance.destroy();
+                }
+                const ctx = document.getElementById("ordersChart").getContext("2d");
+
+                window.ordersChartInstance = new Chart(ctx, {
+                                                type: "bar",
+        data: {labels,datasets: [{label: "Orders",data: values,borderColor: "#36a2eb",
+                                                backgroundColor: "rgba(220,53,69,0.2)",
+                                                fill: true}]}});
+            })
+            .fail(err => console.error("Orders API ERROR:", err));
+            }
+
+        function loadTopFoods(from, to) {
+            $.getJSON("/api/ReportApi/TopFoods", {
+                from: toLocalISOString(from),
+                to: toLocalISOString(to)
+            })
+            .done(function (data) {
+                console.log("TopFoods:", data);
+
+                const labels = data.map(d => d.Label);
+                const values = data.map(d => d.Value);
+
+                if (window.topFoodsChartInstance) {
+                window.topFoodsChartInstance.destroy();
+                }
+
+                const ctx = document.getElementById("topFoodsChart").getContext("2d");
+
+                window.topFoodsChartInstance = new Chart(ctx, {
+                                        type: "bar",data: {labels,datasets: [{ label: "Quantity Sold",data: values}]},
+                                        options: {indexAxis: "x"}});
+                                        })
+            .fail(err => console.error("TopFoods API ERROR:", err));
+        }
+
+        // auto load
+        $("#btnLoad").click();
+        });
+    </script>
+}
