@@ -14,5 +14,6 @@ namespace FoodOrdering.services.Interfaces
         Task<OrderEditDTO?> GetEditAsync(int id);
         Task UpdateAsync(OrderEditDTO dto);
         Task UpdateOrdersUpdateTimeByMenuItemNotAvailableAsync(int menuItemId,bool isErrorUpdate);
+        Task<bool> UpdateOrderStatusAsync(int id, string status);
     }
 }

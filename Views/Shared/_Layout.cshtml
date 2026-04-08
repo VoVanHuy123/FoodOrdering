@@ -188,6 +188,13 @@
     <!-- ================= CONTENT ================= -->
     <div class="@(ViewData["FullWidth"] as bool? == true ? "" : "container mt-4")">
         <main>
+            <div id="notification-container"
+                 style="
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 9999;">
+            </div>
             @RenderBody()
         </main>
     </div>
@@ -245,6 +252,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="~/js/orderHub.js"></script>
+     <script src="~/js/notifyHub.js"></script> 
 
     @await RenderSectionAsync("Scripts", required: false)
 

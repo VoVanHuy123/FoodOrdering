@@ -22,6 +22,43 @@ namespace FoodOrdering.services.Implementations
             _hub = hub;
         }
 
+        public async Task<bool> UpdateOrderStatusAsync(int id, string newStatus)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Table) 
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null) return false;
+
+            order.Status = newStatus;
+            order.UpdateTime = DateTime.Now;
+
+            if (newStatus == "Completed" || newStatus == "Canceled")
+            {
+                order.Table?.Status = "Available";
+            }
+
+            await _context.SaveChangesAsync();
+
+            await _hub.Clients.All.SendAsync("OrderUpdated", new
+            {
+                id = order.Id,
+                status = order.Status
+            });
+
+            if (order.Table != null)
+            {
+                await _hub.Clients.All.SendAsync("TableOccupied", new
+                {
+                    id = order.Table.Id,
+                    tableNumber = order.Table.TableNumber,
+                    status = order.Table.Status
+                });
+            }
+
+            return true;
+        }
+
         // ================= GET ALL =================
         public async Task<PagedResult<OrderDTO>> GetAllAsync(OrderQuery query)
         {
@@ -406,6 +443,12 @@ namespace FoodOrdering.services.Implementations
                 table.TableNumber,
                 table.Status
 
+            });
+
+            await _hub.Clients.All.SendAsync("OrderUpdated", new
+            {
+                id = order.Id,
+                status = order.Status
             });
 
             await _context.SaveChangesAsync();

@@ -72,9 +72,10 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy
-                .AllowAnyOrigin()
+                .SetIsOriginAllowed(_ => true)
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyMethod()
+                .AllowCredentials();
         });
 });
 
@@ -118,6 +119,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapHub<OrderHub>("/orderHub");
+app.MapHub<NotifyHub>("/notifyHub");
 app.MapHub<MenuItemHub>("/menuItemHub");
 //RouteConfig.RegisterRoutes(app);
 app.MapStaticAssets();
