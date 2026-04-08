@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FoodOrdering.Controllers
 {
     [Authorize(Roles = "Admin")]
+    //[AllowAnonymous]
     public class UsersController : Controller
     {
         private readonly IUsersService _userService;
