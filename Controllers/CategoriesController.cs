@@ -1,9 +1,6 @@
 ﻿using FoodOrdering.DTOs;
-using FoodOrdering.services.Interfaces;
 using FoodOrdering.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Threading.Tasks;
 
 namespace FoodOrdering.Controllers
 {
@@ -16,26 +13,56 @@ namespace FoodOrdering.Controllers
             _service = service;
         }
 
-        // GET: 
-        [HttpGet]
-        public IActionResult Create()
+        // =====================
+        // GET: Index
+        // =====================
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var data = await _service.GetAllAsync();
+            return View(data);
         }
 
-        // POST:
+        // =====================
+        // CREATE
+        // =====================
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CategoryDTO dto)
+        public async Task<IActionResult> Create([FromBody] CategoryDTO dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(dto);
-            }
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                return BadRequest();
 
             await _service.CreateAsync(dto);
+            return Ok();
+        }
 
-            return RedirectToAction("Index", "MenuItems");
+        // =====================
+        // EDIT
+        // =====================
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, string name)
+        {
+            var result = await _service.UpdateAsync(id, new CategoryDTO
+            {
+                Name = name
+            });
+
+            if (!result) return NotFound();
+
+            return Ok();
+        }
+
+        // =====================
+        // DELETE
+        // =====================
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _service.DeleteAsync(id);
+
+            if (!result)
+                return BadRequest("Category still has products");
+
+            return Ok();
         }
     }
 }
