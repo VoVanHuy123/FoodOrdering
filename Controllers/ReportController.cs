@@ -1,9 +1,11 @@
 ﻿using FoodOrdering.Services.Interfaces;
 using FoodOrdering.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrdering.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class ReportsController : Controller
     {
         private readonly IReportService _reportService;
