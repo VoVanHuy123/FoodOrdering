@@ -1,6 +1,7 @@
 ﻿using FoodOrdering.DTOs;
 using FoodOrdering.services.Interfaces;
 using FoodOrdering.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
@@ -29,6 +30,7 @@ namespace FoodOrdering.Controllers
         // =====================
         // GET: MenuItems
         // =====================
+        [AllowAnonymous]
         public async Task<IActionResult> Index(MenuItemQueryDTO query)
         {
             var menus = await _menuService.GetAllAsync(query);
@@ -43,6 +45,7 @@ namespace FoodOrdering.Controllers
         // =====================
         // GET: Details
         // =====================
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var menu = await _menuService.GetByIdAsync(id);
@@ -56,11 +59,11 @@ namespace FoodOrdering.Controllers
         // =====================
         // GET: Create
         // =====================
+        [Authorize (Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             var categories = await _categoriesService.GetAllAsync();
             ViewBag.CategoryId = new SelectList(categories, "Id", "Name");
-
             return View();
         }
 
@@ -69,6 +72,7 @@ namespace FoodOrdering.Controllers
         // =====================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(MenuItemDTO dto)
         {
             var categories = await _categoriesService.GetAllAsync();
@@ -84,6 +88,10 @@ namespace FoodOrdering.Controllers
 
             // Upload Cloudinary
 
+
+            }
+
+            // Upload Cloudinary
             if (dto.ImageFile != null)
             {
                 dto.ImageUrl =
@@ -98,6 +106,7 @@ namespace FoodOrdering.Controllers
         // =====================
         // GET: Edit
         // =====================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var menu = await _menuService.GetByIdAsync(id);
@@ -114,6 +123,7 @@ namespace FoodOrdering.Controllers
         // =====================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, MenuItemDTO dto)
         {
             var categories = await _categoriesService.GetAllAsync();
@@ -144,6 +154,7 @@ namespace FoodOrdering.Controllers
         // =====================
         // GET: Delete
         // =====================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var menu = await _menuService.GetByIdAsync(id);
@@ -157,6 +168,7 @@ namespace FoodOrdering.Controllers
         // =====================
         // POST: Delete
         // =====================
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

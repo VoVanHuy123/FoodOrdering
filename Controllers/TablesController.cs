@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FoodOrdering.Context;
+using FoodOrdering.DTOs;
+using FoodOrdering.Models;
+using FoodOrdering.services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using FoodOrdering.Context;
-using FoodOrdering.Models;
-using FoodOrdering.services.Interfaces;
-using FoodOrdering.DTOs;
 
 namespace FoodOrdering.Controllers
 {
@@ -48,6 +49,7 @@ namespace FoodOrdering.Controllers
         }
 
         // GET: Tables/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -58,6 +60,7 @@ namespace FoodOrdering.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(TableDTO dto)
         {
             var result = await _tablesService.CreateTable(dto);
@@ -65,6 +68,7 @@ namespace FoodOrdering.Controllers
         }
 
         // GET: Tables/Edit/5
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -85,6 +89,7 @@ namespace FoodOrdering.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,TableNumber,QRCode,Status")] Tables tables)
         {
             if (id != tables.Id)
@@ -116,6 +121,7 @@ namespace FoodOrdering.Controllers
         }
 
         // GET: Tables/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -134,6 +140,7 @@ namespace FoodOrdering.Controllers
 
         [HttpPost, ActionName("ReCreateQaCode")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ReCreateQaCode(int id)
         {
             await _tablesService.RecreateQACode(id);
@@ -144,6 +151,7 @@ namespace FoodOrdering.Controllers
         // POST: Tables/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var tables = await _tablesService.DeleteTableAsync(id);
