@@ -56,8 +56,12 @@ namespace FoodOrdering.Controllers
         // =====================
         // GET: Create
         // =====================
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var categories = await _categoriesService.GetAllAsync();
+
+            ViewBag.CategoryId =
+                new SelectList(categories, "Id", "Name");
             return View();
         }
 
@@ -68,10 +72,13 @@ namespace FoodOrdering.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(MenuItemDTO dto)
         {
+            var categories = await _categoriesService.GetAllAsync();
+            ViewBag.CategoryId =
+                new SelectList(categories, "Id", "Name", dto.CategoryId);
+
             if (!ModelState.IsValid)
                 return View(dto);
 
-            // Upload Cloudinary
             if (dto.ImageFile != null)
             {
                 dto.ImageUrl =
