@@ -1,32 +1,5 @@
 ﻿@using FoodOrdering.DTOs
-@* 
-@model List<FoodOrdering.DTOs.MenuItemDTO>
 
-@{
-    ViewData["Title"] = "Menu";
-}
-
-<h2>Restaurant Menu</h2>
-
-<div style="display:flex;flex-wrap:wrap;gap:20px">
-
-    @foreach (var item in Model)
-    {
-        <div style="width:250px;border:1px solid #ccc;padding:10px">
-
-            <img src="@item.ImageUrl"
-                 style="width:100%;height:150px;object-fit:cover" />
-
-            <h4>@item.Name</h4>
-
-            <p>@item.Description</p>
-
-            <b>@item.Price.ToString("N0") VNĐ</b>
-
-        </div>
-    }
-
-</div> *@
 @model PagedResult<FoodOrdering.DTOs.MenuItemDTO>
 @{
     var labels = new[] { "Hot", "New", "Sale" };
@@ -121,14 +94,21 @@
                 </div>
             </div>
 
-            <!-- Price -->
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h6 class="fw-bold">PRICE RANGE</h6>
-                    <p class="text-muted">$2 - $15</p>
-                    <input type="range" class="form-range">
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+
+
+                        <a asp-controller="MenuItems"
+                               asp-action="Create"
+                               class="btn btn-warning w-100 fw-bold">
+                            ➕ Add Menu Item
+                        </a>
+
+                    </div>
                 </div>
-            </div>
+            }
 
         </div>
 

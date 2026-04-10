@@ -60,6 +60,7 @@ namespace FoodOrdering.Controllers
         {
             var categories = await _categoriesService.GetAllAsync();
             ViewBag.CategoryId = new SelectList(categories, "Id", "Name");
+
             return View();
         }
 
@@ -70,15 +71,19 @@ namespace FoodOrdering.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(MenuItemDTO dto)
         {
+            var categories = await _categoriesService.GetAllAsync();
+            ViewBag.CategoryId =
+                new SelectList(categories, "Id", "Name", dto.CategoryId);
+
             if (!ModelState.IsValid)
             {
                 var categories = await _categoriesService.GetAllAsync();
                 ViewBag.CategoryId = new SelectList(categories, "Id", "Name");
                 return View(dto);
-
             }
 
             // Upload Cloudinary
+
             if (dto.ImageFile != null)
             {
                 dto.ImageUrl =
