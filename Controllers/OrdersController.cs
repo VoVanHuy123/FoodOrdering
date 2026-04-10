@@ -27,7 +27,7 @@ namespace FoodOrdering.Controllers
         }
 
         // GET: Orders
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> Index(OrderQuery query)
         {
             var result = await _orderService.GetAllAsync(query);
@@ -38,6 +38,7 @@ namespace FoodOrdering.Controllers
         }
 
         // GET: Orders/Details/5
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> Details(int id)
         {
             var order = await _orderService.GetByIdAsync(id);
@@ -49,6 +50,7 @@ namespace FoodOrdering.Controllers
         }
 
         // GET: Orders/Create
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             ViewData["TableId"] =
@@ -68,6 +70,7 @@ namespace FoodOrdering.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(OrderEditDTO dto)
         {
             var order = new Orders
@@ -119,6 +122,7 @@ namespace FoodOrdering.Controllers
         //}
 
         // GET: Orders/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -138,6 +142,7 @@ namespace FoodOrdering.Controllers
         // POST: Orders/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             //var orders = await _context.Orders.FindAsync(id);
