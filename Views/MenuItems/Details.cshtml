@@ -1,123 +1,4 @@
-﻿@* @model FoodOrdering.DTOs.MenuItemDTO
-
-@{
-    ViewData["Title"] = "Details";
-}
-
-<h1>Details</h1>
-
-<div>
-    <h4>MenuItems</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageUrl)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsAvailable)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsAvailable)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Category)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Category.Id)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
-@model FoodOrdering.DTOs.MenuItemDTO
-
-@{
-    ViewData["Title"] = "Menu Item Details";
-}
-
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-
-            <div class="card shadow-sm border-0">
-                <!-- Image -->
-                <img src="@(
-                                     string.IsNullOrEmpty(Model.ImageUrl)
-                                     ? Url.Content("~/imgs/food.png")
-                                     : Model.ImageUrl
-                                                     )"
-                     class="card-img-top"
-                     style="height:300px; object-fit:cover; border-top-left-radius:10px; border-top-right-radius:10px;" />
-
-                <div class="card-body">
-                    <!-- Name -->
-                    <h2 class="card-title fw-bold">@Model.Name</h2>
-
-                    <!-- Price -->
-                    <h4 class="text-danger">$ @Model.Price.ToString("N0")</h4>
-
-                    <!-- Availability -->
-                    <p>
-                        <span class="badge @(Model.IsAvailable ? "bg-success" : "bg-secondary")">
-                            @(Model.IsAvailable ? "Available" : "Out of Stock")
-                        </span>
-                    </p>
-
-                    <!-- Category -->
-                    <p class="text-muted">Category: <strong>@Model.CategoryName</strong></p>
-
-                    <!-- Description -->
-                    <p class="card-text mt-3">@Model.Description</p>
-
-                    <!-- Action Buttons -->
-                    <div class="mt-4">
-                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">Edit</a>
-                        <a asp-action="Index" class="btn btn-secondary">Back to Menu</a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<style>
-    .card-title {
-        font-size: 2rem;
-    }
-
-    .card-text {
-        font-size: 1.1rem;
-        line-height: 1.5;
-    }
-
-    .btn {
-        min-width: 120px;
-    }
-</style> *@
+﻿@* 
 @model FoodOrdering.DTOs.MenuItemDTO
 
 @{
@@ -193,4 +74,144 @@
             border-radius: 10px 10px 0 0 !important;
         }
     }
+</style> *@
+@model FoodOrdering.DTOs.MenuItemDTO
+
+@{
+    ViewData["Title"] = "Menu Item Details";
+}
+
+<style>
+
+    body {
+        background: #f6f7fb;
+    }
+
+    .food-hero {
+        height: 420px;
+        object-fit: cover;
+        border-radius: 15px;
+    }
+
+    .glass-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        padding: 30px;
+        height: 100%;
+    }
+
+    .price {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ff4d4f;
+    }
+
+    .category-tag {
+        background: #fff3cd;
+        color: #856404;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+
+    .status-badge {
+        font-size: .9rem;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+
+    .food-description {
+        margin-top: 15px;
+        line-height: 1.7;
+        color: #555;
+    }
+
+    .action-btn {
+        min-width: 140px;
+    }
+
 </style>
+
+<div class="container mt-4 mb-5">
+
+    <div class="row g-4">
+
+        <!-- LEFT IMAGE -->
+        <div class="col-md-6">
+
+            <div class="position-relative">
+
+                <img class="food-hero w-100 shadow-sm"
+                     src="@(string.IsNullOrEmpty(Model.ImageUrl)
+                                                             ? Url.Content("~/imgs/food.png")
+                                                             : Model.ImageUrl)" />
+
+                <!-- Status Badge -->
+                <span class="badge status-badge position-absolute top-0 start-0 m-3
+                    @(Model.IsAvailable ? "bg-success" : "bg-secondary")">
+
+                    @(Model.IsAvailable ? "Available" : "Out of Stock")
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- RIGHT INFO -->
+        <div class="col-md-6">
+
+            <div class="glass-card d-flex flex-column">
+
+                <!-- NAME -->
+                <h1 class="fw-bold mb-2">
+                    @Model.Name
+                </h1>
+
+                <!-- CATEGORY -->
+                <div class="mb-3">
+                    <span class="category-tag">
+                        🍽 @Model.CategoryName
+                    </span>
+                </div>
+
+                <!-- PRICE -->
+                <div class="price mb-3">
+                    $ @Model.Price.ToString("N0")
+                </div>
+
+                <hr />
+
+                <!-- DESCRIPTION -->
+                <div class="food-description">
+                    @Model.Description
+                </div>
+
+                <!-- BUTTONS -->
+                <div class="mt-auto pt-4 d-flex gap-2">
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit"
+                               asp-route-id="@Model.Id"
+                               class="btn btn-warning action-btn fw-bold">
+                            ✏ Edit
+                        </a>
+                    }
+
+                    <a asp-action="Index"
+                           class="btn btn-outline-secondary action-btn">
+                        ← Back Menu
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

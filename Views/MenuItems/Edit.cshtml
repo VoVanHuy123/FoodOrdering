@@ -1,125 +1,4 @@
 ﻿@* 
-
-@model FoodOrdering.DTOs.MenuItemDTO
-
-@{
-    ViewData["Title"] = "Edit Menu Item";
-}
-
-<div class="container mt-4 mb-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-
-            <div class="card shadow-sm border-0">
-                <div class="row g-0">
-
-                    <!-- Image bên trái -->
-                    <div class="col-md-5">
-                        <img id="previewImage"
-                             src="@(string.IsNullOrEmpty(Model.ImageUrl)
-                                                                                         ? Url.Content("~/imgs/food.png")
-                                                                                         : Model.ImageUrl)"
-                             class="img-fluid h-100 w-100"
-                             style="object-fit:cover; border-top-left-radius:10px; border-bottom-left-radius:10px;" />
-                    </div>
-
-                    <!-- Form bên phải -->
-                    <div class="col-md-7">
-                        <div class="card-body d-flex flex-column h-100">
-
-                            <h3 class="fw-bold mb-3">Edit Menu Item</h3>
-
-                            <form asp-action="Edit">
-                                <input type="hidden" asp-for="Id" />
-
-                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                                <!-- Name -->
-                                <div class="mb-3">
-                                    <label asp-for="Name" class="form-label"></label>
-                                    <input asp-for="Name" class="form-control" />
-                                    <span asp-validation-for="Name" class="text-danger"></span>
-                                </div>
-
-                                <!-- Description -->
-                                <div class="mb-3">
-                                    <label asp-for="Description" class="form-label"></label>
-                                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                                    <span asp-validation-for="Description" class="text-danger"></span>
-                                </div>
-
-                                <!-- Price -->
-                                <div class="mb-3">
-                                    <label asp-for="Price" class="form-label"></label>
-                                    <input asp-for="Price" class="form-control" />
-                                    <span asp-validation-for="Price" class="text-danger"></span>
-                                </div>
-
-                                <!-- Image URL -->
-                                <div class="mb-3">
-                                    <label asp-for="ImageUrl" class="form-label"></label>
-                                    <input asp-for="ImageUrl" class="form-control" id="imageInput" />
-                                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
-                                </div>
-
-                                <!-- Category -->
-                                <div class="mb-3">
-                                    <label asp-for="CategoryId" class="form-label"></label>
-                                    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId"></select>
-                                    <span asp-validation-for="CategoryId" class="text-danger"></span>
-                                </div>
-
-                                <!-- Availability -->
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" asp-for="IsAvailable" />
-                                    <label class="form-check-label">
-                                        Available
-                                    </label>
-                                </div>
-
-                                <!-- Buttons -->
-                                <div class="mt-auto d-flex justify-content-end">
-                                    <a asp-action="Index" class="btn btn-secondary me-2">Back</a>
-                                    <button type="submit" class="btn btn-warning">Save</button>
-                                </div>
-
-                            </form>
-
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-
-    <script>
-        // Preview image khi nhập URL
-        document.getElementById("imageInput").addEventListener("input", function () {
-            const url = this.value;
-            document.getElementById("previewImage").src = url || "/imgs/food.png";
-        });
-    </script>
-}
-
-<style>
-    .btn {
-        min-width: 120px;
-    }
-
-    @@media (max-width: 768px) {
-        .card img {
-            border-radius: 10px 10px 0 0 !important;
-        }
-    }
-</style> *@
 @model FoodOrdering.DTOs.MenuItemDTO
 
 @{
@@ -179,15 +58,7 @@
 
                                 <!-- Category -->
                                 <div class="mb-3">
-                                    @*     <label asp-for="CategoryId" class="form-label"></label>
-                                    @foreach (var c in ViewBag.Categories)
-                                    {
-                                        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId"></select>
-                                        <span asp-validation-for="CategoryId" class="text-danger"></span>
-                                        <li>
-                                            <a href="?CategoryId=@c.Id" class="menu-link">@c.Name</a>
-                                        </li>
-                                    } *@
+                                   
                                     <label asp-for="CategoryId"></label>
                                     <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId"></select>
                                 </div>
@@ -225,5 +96,222 @@
                 document.getElementById("previewImage").src = URL.createObjectURL(file);
             }
         });
+    </script>
+} *@
+@model FoodOrdering.DTOs.MenuItemDTO
+
+@{
+    ViewData["Title"] = "Edit Menu Item";
+}
+
+<style>
+    .menu-card {
+        transition: .3s;
+        border-radius: 10px;
+    }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+        }
+</style>
+
+<div class="container mt-3 mb-4">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-10">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="row g-0">
+
+                    <!-- ================= IMAGE PREVIEW ================= -->
+                    <div class="col-md-5 d-flex align-items-center justify-content-center bg-light">
+
+                        <div class="card menu-card border-0 shadow-sm position-relative w-75">
+
+                            <!-- Preview Badge -->
+                            <span class="badge bg-warning position-absolute m-2">
+                                Preview
+                            </span>
+
+                            <!-- Availability -->
+                            <span id="previewAvailable"
+                                  class="badge position-absolute top-0 end-0 m-2 @(Model.IsAvailable ? "bg-success" : "bg-secondary")">
+                                @(Model.IsAvailable ? "Available" : "Out of Stock")
+                            </span>
+
+                            <!-- Image -->
+                            <img id="previewImage"
+                                 src="@(string.IsNullOrEmpty(Model.ImageUrl)
+                                                                                                 ? Url.Content("~/imgs/food.png")
+                                                                                                 : Model.ImageUrl)"
+                                 class="card-img-top"
+                                 style="height:260px; object-fit:cover;" />
+
+                            <!-- Body -->
+                            <div class="card-body text-center">
+
+                                <h6 id="previewName" class="fw-bold">
+                                    @Model.Name
+                                </h6>
+
+                                <p id="previewPrice" class="text-danger fw-bold">
+                                    $ @Model.Price
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- ================= FORM ================= -->
+                    <div class="col-md-7">
+
+                        <div class="card-body d-flex flex-column h-100">
+
+                            <form asp-action="Edit" enctype="multipart/form-data">
+
+                                <input type="hidden" asp-for="Id" />
+                                <input type="hidden" asp-for="ImageUrl" />
+
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                                <!-- NAME -->
+                                <div class="mb-3">
+                                    <label asp-for="Name"></label>
+                                    <input asp-for="Name" class="form-control" id="nameInput" />
+                                </div>
+
+                                <!-- DESCRIPTION -->
+                                <div class="mb-3">
+                                    <label asp-for="Description"></label>
+                                    <textarea asp-for="Description" class="form-control"></textarea>
+                                </div>
+
+                                <!-- PRICE -->
+                                <div class="mb-3">
+                                    <label asp-for="Price"></label>
+                                    <input asp-for="Price" class="form-control" id="priceInput" />
+                                </div>
+
+                                <!-- IMAGE -->
+                                <div class="mb-3">
+                                    <label class="form-label">Upload Image</label>
+                                    <input asp-for="ImageFile"
+                                           type="file"
+                                           class="form-control"
+                                           id="imageInput"
+                                           accept="image/*" />
+                                </div>
+
+                                <!-- CATEGORY -->
+                                <div class="mb-3">
+                                    <label asp-for="CategoryId"></label>
+                                    <select asp-for="CategoryId"
+                                            class="form-select"
+                                            asp-items="ViewBag.CategoryId">
+                                    </select>
+                                </div>
+
+                                <!-- AVAILABLE -->
+                                <div class="form-check mb-3">
+                                    <input asp-for="IsAvailable"
+                                           class="form-check-input"
+                                           id="availableInput" />
+                                    <label class="form-check-label">
+                                        Available
+                                    </label>
+                                </div>
+
+                                <!-- BUTTON -->
+                                <div class="mt-auto d-flex justify-content-end">
+
+                                    <a asp-action="Index"
+                                           class="btn btn-secondary me-2">
+                                        Back
+                                    </a>
+
+                                    <button type="submit"
+                                            class="btn btn-warning fw-bold">
+                                        💾 Save
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+
+        // ================= IMAGE PREVIEW =================
+        document.getElementById("imageInput")
+            .addEventListener("change", function (event) {
+
+                const file = event.target.files[0];
+
+                if (file) {
+                    previewImage.src = URL.createObjectURL(file);
+                }
+            });
+
+
+        // ================= NAME PREVIEW =================
+        document.getElementById("nameInput")
+            .addEventListener("input", function () {
+
+                previewName.innerText =
+                    this.value || "Menu Item";
+            });
+
+
+        // ================= PRICE PREVIEW =================
+        document.getElementById("priceInput")
+            .addEventListener("input", function () {
+
+                previewPrice.innerText =
+                    "$ " + (this.value || "0");
+            });
+
+
+        // ================= AVAILABLE BADGE =================
+        document.getElementById("availableInput")
+            .addEventListener("change", function () {
+
+                const badge = document.getElementById("previewAvailable");
+
+                if (this.checked) {
+                    badge.className =
+                        "badge position-absolute top-0 end-0 m-2 bg-success";
+                    badge.innerText = "Available";
+                }
+                else {
+                    badge.className =
+                        "badge position-absolute top-0 end-0 m-2 bg-secondary";
+                    badge.innerText = "Out of Stock";
+                }
+            });
+
     </script>
 }
