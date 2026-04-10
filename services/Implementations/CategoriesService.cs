@@ -22,7 +22,8 @@ namespace FoodOrdering.services.Implementations
                 .Select(c => new CategoryDTO
                 {
                     Id = c.Id,
-                    Name = c.Name
+                    Name = c.Name,
+                    ProductCount = _context.MenuItems.Count(m => m.CategoryId == c.Id)
                 })
                 .ToListAsync();
         }
@@ -76,6 +77,11 @@ namespace FoodOrdering.services.Implementations
 
             if (category == null)
                 return false;
+
+            var hasProducts = await _context.MenuItems.AnyAsync(m => m.CategoryId == id);
+
+            if (hasProducts)
+                return false; 
 
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
