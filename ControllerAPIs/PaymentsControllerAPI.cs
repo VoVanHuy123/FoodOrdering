@@ -1,5 +1,8 @@
 // FoodOrdering/ControllerAPIs/PaymentsControllerAPI.cs
+using FoodOrdering.DTOs;
 using FoodOrdering.services.Interfaces;
+using FoodOrdering.Services.Implementations;
+using FoodOrdering.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -14,10 +17,13 @@ namespace FoodOrdering.ControllerAPIs
     public class PaymentsControllerAPI : ControllerBase
     {
         private readonly IOrdersService _ordersService;
+        private readonly IPaymentService _paymentService;
 
-        public PaymentsControllerAPI(IOrdersService ordersService)
+
+        public PaymentsControllerAPI(IOrdersService ordersService, IPaymentService paymentService)
         {
             _ordersService = ordersService;
+            _paymentService = paymentService;
         }
 
         [HttpPost("vnpay/create-url")]
@@ -66,21 +72,39 @@ namespace FoodOrdering.ControllerAPIs
 
             // Final payment URL
             string paymentUrl = vnp_Url + "?" + queryString + "&vnp_SecureHash=" + vnp_SecureHash;
-            
+
             return Ok(new { url = paymentUrl });
         }
-    }
 
-    public class VnPayRequest { public int OrderId { get; set; } }
-
-    public class VnPayCompare : IComparer<string>
-    {
-        public int Compare(string? x, string? y)
+        [HttpPost("create")]
+        public async Task<IActionResult> CreatePayment([FromBody] PaymentDTO dto)
         {
-            if (x == y) return 0;
-            if (x == null) return -1;
-            if (y == null) return 1;
-            return string.Compare(x, y, StringComparison.Ordinal);
+            var result = await _paymentService.CreatePaymentAsync(dto);
+
+            if (!result)
+                return BadRequest("Create payment failed");
+
+            return Ok("Payment created");
         }
+
+
     }
-}
+
+        public class VnPayRequest { public int OrderId { get; set; } }
+
+        public class VnPayCompare : IComparer<string>
+        {
+            public int Compare(string? x, string? y)
+            {
+                if (x == y) return 0;
+                if (x == null) return -1;
+                if (y == null) return 1;
+                return string.Compare(x, y, StringComparison.Ordinal);
+            }
+        }
+  
+
+
+    
+
+    }   

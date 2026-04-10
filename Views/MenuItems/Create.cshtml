@@ -76,6 +76,7 @@
                         class="form-control"
                         asp-items="ViewBag.CategoryId">
                 </select>
+
             </div>
 
             <button class="btn btn-primary">
@@ -93,7 +94,6 @@
 </div>
 
 @section Scripts {
-
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

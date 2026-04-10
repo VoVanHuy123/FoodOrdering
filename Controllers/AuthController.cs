@@ -11,7 +11,7 @@ namespace FoodOrdering.Controllers
     [AllowAnonymous]
     public class AuthController : Controller
     {
-        private readonly IAuthService _authService;
+          private readonly IAuthService _authService;
         public AuthController(IAuthService authService)
         {
             _authService = authService;

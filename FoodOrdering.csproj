@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="services\Interfaces\IAuthService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
 

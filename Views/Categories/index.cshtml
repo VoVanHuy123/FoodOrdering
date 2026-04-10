@@ -1,0 +1,120 @@
+﻿@model List<FoodOrdering.DTOs.CategoryDTO>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold">Category Management</h3>
+
+        <button class="btn btn-primary" onclick="showCreateBox()">
+            + Add Category
+        </button>
+    </div>
+
+    <!-- CREATE BOX -->
+    <div id="createBox" class="mb-3" style="display:none;">
+        <input id="newName" class="form-control mb-2" placeholder="Category name..." />
+        <button class="btn btn-success" onclick="createCategory()">Create</button>
+    </div>
+
+    <div class="card shadow-lg border-0">
+        <div class="card-body p-0">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Products</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        <tr id="row-@c.Id">
+
+                            <td>
+                                <span id="name-@c.Id">@c.Name</span>
+                                <input id="edit-@c.Id" class="form-control d-none" value="@c.Name" />
+                            </td>
+
+                            <td>@c.ProductCount</td>
+
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-warning me-1"
+                                        onclick="edit(@c.Id)">
+                                    Edit
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-danger"
+                                        onclick="deleteCate(@c.Id)">
+                                    Delete
+                                </button>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function showCreateBox() {
+        document.getElementById("createBox").style.display = "block";
+    }
+
+    async function createCategory() {
+        let name = document.getElementById("newName").value;
+
+        await fetch('/Categories/Create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name })
+        });
+
+        location.reload();
+    }
+
+    function edit(id) {
+        let span = document.getElementById("name-" + id);
+        let input = document.getElementById("edit-" + id);
+
+        if (input.classList.contains("d-none")) {
+            span.classList.add("d-none");
+            input.classList.remove("d-none");
+        } else {
+            save(id);
+        }
+    }
+
+    async function save(id) {
+        let name = document.getElementById("edit-" + id).value;
+
+        await fetch(`/Categories/Edit?id=${id}&name=${name}`, {
+            method: 'POST'
+        });
+
+        location.reload();
+    }
+
+    async function deleteCate(id) {
+        let res = await fetch(`/Categories/Delete?id=${id}`, {
+            method: 'POST'
+        });
+
+        if (res.status === 400) {
+            alert("Category still has products!");
+            return;
+        }
+
+        location.reload();
+    }
+</script>

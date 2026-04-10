@@ -1,0 +1,126 @@
+﻿@model FoodOrdering.ViewModels.ReportViewModel
+
+@{
+    ViewData["Title"] = "Reports Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Reports Dashboard</h2>
+
+<form method="get">
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label class="form-label">Select Time Range</label>
+            <select name="range" id="timeRange" class="form-select">
+                <option value="day" selected="@(Model.Range == "day")">1 Day</option>
+                <option value="month" selected="@(Model.Range == "month")">1 Month</option>
+                <option value="quarter" selected="@(Model.Range == "quarter")">1 Quarter</option>
+                <option value="year" selected="@(Model.Range == "year")">1 Year</option>
+                <option value="custom" selected="@(Model.Range == "custom")">Custom</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 @(Model.Range == "custom" ? "" : "d-none")" id="customRangeDiv">
+            <label class="form-label">From</label>
+            <input type="date" name="from" class="form-control"
+                   value="@Model.From.ToString("yyyy-MM-dd")" />
+
+            <label class="form-label mt-1">To</label>
+            <input type="date" name="to" class="form-control"
+                   value="@Model.To.ToString("yyyy-MM-dd")" />
+        </div>
+
+        <div class="col-md-3 align-self-end">
+            <button type="submit" class="btn btn-primary">Load Report</button>
+        </div>
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <h5>Revenue</h5>
+        <canvas id="revenueChart"></canvas>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <h5>Orders Count</h5>
+        <canvas id="ordersChart"></canvas>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h5>Top Foods</h5>
+        <canvas id="topFoodsChart"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // ===== Toggle custom range =====
+        document.getElementById("timeRange").addEventListener("change", function () {
+        const customDiv = document.getElementById("customRangeDiv");
+        if (this.value === "custom") {
+        customDiv.classList.remove("d-none");
+        } else {
+        customDiv.classList.add("d-none");
+        }
+        });
+
+        // ===== Data từ Model =====
+        const revenueLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Revenue.Select(x => x.Label)));
+        const revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Revenue.Select(x => x.Value)));
+
+        const ordersLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Orders.Select(x => x.Label)));
+        const ordersData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Orders.Select(x => x.Value)));
+
+        const topLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopFoods.Select(x => x.Label)));
+        const topData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopFoods.Select(x => x.Value)));
+
+        // ===== Revenue Chart =====
+        new Chart(document.getElementById("revenueChart"), {
+        type: "line",
+        data: {
+        labels: revenueLabels,
+        datasets: [{
+        label: "Revenue",
+        data: revenueData,
+        borderColor: "#ff6384",
+        backgroundColor: "rgba(255,99,132,0.2)",
+        fill: true
+        }]
+        }
+        });
+
+        // ===== Orders Chart =====
+        new Chart(document.getElementById("ordersChart"), {
+        type: "bar",
+        data: {
+        labels: ordersLabels,
+        datasets: [{
+        label: "Orders",
+        data: ordersData,
+        borderColor: "#36a2eb",
+        backgroundColor: "rgba(54,162,235,0.2)"
+        }]
+        }
+        });
+
+        // ===== Top Foods Chart =====
+        new Chart(document.getElementById("topFoodsChart"), {
+        type: "bar",
+        data: {
+        labels: topLabels,
+        datasets: [{
+        label: "Quantity Sold",
+        data: topData
+        }]
+        },
+        options: {
+        indexAxis: "x"
+        }
+        });
+    </script>
+}

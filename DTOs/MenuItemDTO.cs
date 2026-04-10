@@ -18,6 +18,7 @@
 
         public string? CategoryName { get; set; }
 
+
         public bool IsAvailable { get; set; }
     }
 }

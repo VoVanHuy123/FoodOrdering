@@ -119,8 +119,23 @@ namespace FoodOrdering.services.Implementations
             if (user == null)
                 return null;
 
-            bool isValid =
-                BCrypt.Net.BCrypt.Verify(password.Trim(), user.Password);
+            bool isValid = false;
+            // nếu password đã là bcrypt
+            if (user.Password.StartsWith("$2"))
+            {
+                isValid = BCrypt.Net.BCrypt.Verify(password.Trim(), user.Password);
+            }
+            else
+            {
+                // fallback: so sánh plain text
+                if (user.Password == password)
+                {
+                    // hash lại để chuẩn hóa
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(password);
+                    await _context.SaveChangesAsync();
+                    isValid = true;
+                }
+            }
 
             if (!isValid)
                 return null;
