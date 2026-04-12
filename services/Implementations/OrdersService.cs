@@ -27,6 +27,7 @@ namespace FoodOrdering.services.Implementations
             var order = await _context.Orders
                 .Include(o => o.Table) 
 
+
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null) return false;
