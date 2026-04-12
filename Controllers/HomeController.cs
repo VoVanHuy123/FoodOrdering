@@ -32,8 +32,16 @@ namespace FoodOrdering.Controllers
         [AllowAnonymous]
         public IActionResult Index()
         {
-            var foods = _context.MenuItems.ToList(); // lấy data DB
+            var foods = _context.MenuItems
+                .OrderByDescending(m => m.Id)
+                .ToList();
             return View(foods);
+        }
+
+        [AllowAnonymous]
+        public IActionResult Privacy()
+        {
+            return View();
         }
     }
 }

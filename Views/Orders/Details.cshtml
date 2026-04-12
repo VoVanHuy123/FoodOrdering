@@ -1,154 +1,121 @@
 ﻿@model FoodOrdering.DTOs.OrderDTO
 
 @{
-    ViewData["Title"] = "Order Details";
+    ViewData["Title"] = $"Order #{Model.Id}";
+    ViewData["FullWidth"] = true;
+
+    string StatusClass(string? s) => s switch
+    {
+        "Completed" => "admin-badge admin-badge--completed",
+        "Pending" => "admin-badge admin-badge--pending",
+        "Preparing" => "admin-badge admin-badge--preparing",
+        "Cancelled" => "admin-badge admin-badge--cancelled",
+        _ => "admin-badge admin-badge--cancelled"
+    };
+
+    var tableLabel = Model.TableNumber > 0 ? Model.TableNumber.ToString() : Model.TableId.ToString();
 }
 
-<div class="container mt-4">
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
 
-    <div class="row">
+<div class="admin-surface py-4">
+    <div class="container admin-page">
 
-        <!-- ================= LEFT : ORDER INFO ================= -->
-        <div class="col-lg-4">
+        <header class="admin-page__header d-flex flex-column flex-md-row justify-content-md-between align-items-md-start gap-3 mb-4">
+            <div>
+                <h1 class="admin-page__title">Order #@Model.Id</h1>
+                <p class="admin-page__meta mb-0">Placed @Model.OrderTime.ToString("dd/MM/yyyy HH:mm") · Table @tableLabel</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary border-0 bg-white shadow-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Back to list
+                </a>
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-admin-primary">
+                    <i class="bi bi-pencil me-1"></i> Edit
+                </a>
+            </div>
+        </header>
 
-            <div class="card shadow-sm border-0">
-
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">🧾 Order Information</h5>
-                </div>
-
-                <div class="card-body">
-
-                    <p>
-                        <strong>🍽 Table:</strong>
-                        <span class="fw-bold">#@Model.TableId</span>
-                    </p>
-
-                    <p>
-                        <strong>⏰ Order Time:</strong><br />
-                        @Model.OrderTime.ToString("dd/MM/yyyy HH:mm")
-                    </p>
-
-                    <p>
-                        <strong>Status:</strong><br />
-
-                        <span class="badge
-                            @(Model.Status == "Completed" ? "bg-success" :
-                                                            Model.Status == "Pending" ? "bg-warning text-dark" :
-                                                            "bg-secondary")">
-
-                            @Model.Status
-                        </span>
-                    </p>
-
-                    <hr />
-
-                    <h4 class="text-danger fw-bold">
-                        Total: @Model.TotalAmount.ToString("N0") VNĐ
-                    </h4>
-
-                    @if (!string.IsNullOrEmpty(Model.Note))
-                    {
-                        <div class="alert alert-light mt-3">
-                            📝 @Model.Note
-                        </div>
-                    }
-
-                </div>
-
-                <div class="card-footer text-center bg-white">
-
-                    <a asp-action="Edit"
-                           asp-route-id="@Model.Id"
-                           class="btn btn-warning btn-sm">
-                        Edit
-                    </a>
-
-                    <a asp-action="Index"
-                           class="btn btn-secondary btn-sm">
-                        Back
-                    </a>
-
-                </div>
-
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <section class="admin-panel h-100">
+                    <div class="admin-panel__head">
+                        <h2 class="admin-panel__title">Summary</h2>
+                    </div>
+                    <div class="p-4">
+                        <dl class="row mb-0 small">
+                            <dt class="col-5 text-muted">Table</dt>
+                            <dd class="col-7 fw-semibold">@tableLabel</dd>
+                            <dt class="col-5 text-muted">Status</dt>
+                            <dd class="col-7"><span class="@StatusClass(Model.Status)">@(Model.Status ?? "—")</span></dd>
+                            <dt class="col-5 text-muted">Total</dt>
+                            <dd class="col-7"><span class="admin-table__amount fs-5">@Model.TotalAmount.ToString("N0") đ</span></dd>
+                        </dl>
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <div class="mt-3 p-3 rounded border" style="background: #f8fafc; border-color: var(--admin-border, #e2e8f0) !important;">
+                                <div class="admin-toolbar__label mb-1">Note</div>
+                                <p class="mb-0 small">@Model.Note</p>
+                            </div>
+                        }
+                    </div>
+                </section>
             </div>
 
-        </div>
-
-        <!-- ================= RIGHT : ORDER ITEMS ================= -->
-        <div class="col-lg-8">
-
-            <div class="card shadow-sm border-0">
-
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">🍔 Ordered Items</h5>
-                </div>
-
-                <div class="card-body">
+            <div class="col-lg-8">
+                <section class="admin-panel">
+                    <div class="admin-panel__head">
+                        <h2 class="admin-panel__title">Line items</h2>
+                    </div>
 
                     @if (Model.Items == null || !Model.Items.Any())
                     {
-                        <div class="alert alert-info">
-                            No items in this order.
+                        <div class="admin-empty border-0">
+                            <i class="bi bi-cart-x d-block"></i>
+                            <p class="mb-0">No items in this order.</p>
                         </div>
                     }
                     else
                     {
-                        @foreach (var item in Model.Items)
-                        {
-                            <div class="d-flex align-items-center mb-4 border-bottom p-3 @((item.IsAvailable == false) ? "border-warning bg-warning-subtle" : "")">
-
-                                <!-- IMAGE -->
-                                <img src="@Url.Content(item.ImageUrl ?? "~/imgs/food.png")"
-                                     width="80"
-                                     height="80"
-                                     class="rounded shadow-sm me-3"
-                                     style="object-fit:cover;" />
-
-                                <!-- INFO -->
-                                <div class="flex-grow-1">
-
-                                    <h5 class="mb-1 fw-bold">
-                                        @item.MenuItemName
-                                    </h5>
-
-                                    <div class="text-muted">
-                                        Price:
-                                        @item.Price.ToString("N0") VNĐ
-                                    </div>
-
-                                    @if (!string.IsNullOrEmpty(item.Note))
+                        <div class="admin-table-wrap">
+                            <table class="table admin-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Item</th>
+                                        <th scope="col" class="text-end">Qty</th>
+                                        <th scope="col" class="text-end">Line total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
                                     {
-                                        <div class="small text-secondary">
-                                            📝 @item.Note
-                                        </div>
+                                        <tr class="@(item.IsAvailable == false ? "admin-row-alert" : null)">
+                                            <td>
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <img src="@Url.Content(item.ImageUrl ?? "~/imgs/food.png")" width="56" height="56" class="rounded border" style="object-fit:cover;" alt="" />
+                                                    <div>
+                                                        <div class="fw-semibold">@item.MenuItemName</div>
+                                                        <div class="small text-muted">@item.Price.ToString("N0") đ / unit</div>
+                                                        @if (!string.IsNullOrEmpty(item.Note))
+                                                        {
+                                                            <div class="small text-muted mt-1">@item.Note</div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-end admin-table__mono">@item.Quantity</td>
+                                            <td class="text-end admin-table__amount">@((item.Price * item.Quantity).ToString("N0")) đ</td>
+                                        </tr>
                                     }
-
-                                </div>
-
-                                <!-- QUANTITY -->
-                                <div class="text-end">
-
-                                    <span class="badge bg-primary fs-6">
-                                        x @item.Quantity
-                                    </span>
-
-                                    <div class="fw-bold text-danger mt-2">
-                                        @((item.Price * item.Quantity).ToString("N0")) VNĐ
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        }
+                                </tbody>
+                            </table>
+                        </div>
                     }
-
-                </div>
-
+                </section>
             </div>
-
         </div>
 
     </div>
-
 </div>

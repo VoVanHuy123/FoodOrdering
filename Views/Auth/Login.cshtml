@@ -1,34 +1,81 @@
 ﻿@{
     ViewData["Title"] = "Login";
+    ViewData["FullWidth"] = true;
 }
 
-<div class="container mt-5" style="max-width:400px">
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
 
-    <h2 class="text-center mb-4">Login</h2>
+<div class="admin-surface py-5">
+    <div class="container admin-page" style="max-width: 960px;">
+        <header class="admin-page__header mb-4">
+            <h1 class="admin-page__title">Welcome back</h1>
+            <p class="admin-page__meta mb-0">Sign in to manage menu items, orders, tables and reports.</p>
+        </header>
 
-    @if (ViewBag.Error != null)
-    {
-        <div class="alert alert-danger">
-            @ViewBag.Error
-        </div>
-    }
+        <section class="admin-panel overflow-hidden rounded-4">
+            <div class="row g-0">
+                <div class="col-lg-6 bg-warning bg-opacity-10 d-flex align-items-center justify-content-center p-5">
+                    <div>
+                        <h2 class="h3 fw-bold mb-3">FoodOrdering</h2>
+                        <p class="text-muted mb-4">Access your restaurant dashboard with a secure login. Keep your menu, orders and tables in sync.</p>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <span class="badge bg-white text-dark rounded-pill px-3 py-2 shadow-sm">Menu</span>
+                            <span class="badge bg-white text-dark rounded-pill px-3 py-2 shadow-sm">Orders</span>
+                            <span class="badge bg-white text-dark rounded-pill px-3 py-2 shadow-sm">Reports</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="p-4 p-lg-5">
+                        <h2 class="fw-bold mb-3">Login</h2>
 
-    <form asp-controller="Auth" asp-action="Login" method="post">
+                        @if (ViewBag.Error != null)
+                        {
+                            <div class="alert alert-danger rounded-4">@ViewBag.Error</div>
+                        }
 
-        <div class="mb-3">
-            <label>Username</label>
-            <input name="Username" class="form-control" required />
-        </div>
+                        <form asp-controller="Auth" asp-action="Login" method="post" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input id="username" name="Username" type="text" class="form-control rounded-4" required />
+                                <div class="invalid-feedback">Please enter your username.</div>
+                            </div>
 
-        <div class="mb-3">
-            <label>Password</label>
-            <input name="password" type="password" class="form-control" required />
-        </div>
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Password</label>
+                                <input id="password" name="password" type="password" class="form-control rounded-4" required />
+                                <div class="invalid-feedback">Please enter your password.</div>
+                            </div>
 
-        <button type="submit" class="btn btn-primary w-100">
-            Login
-        </button>
+                            <button type="submit" class="btn btn-admin-primary w-100 rounded-4 py-2">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Sign in
+                            </button>
+                        </form>
 
-    </form>
-
+                        <p class="text-muted small mt-4 mb-0">Need help? Contact the site administrator for account support.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        (() => {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+}

@@ -1,105 +1,77 @@
-﻿ 
-@model FoodOrdering.DTOs.OrderEditDTO
+﻿@model FoodOrdering.DTOs.OrderEditDTO
 
 @{
-    ViewData["Title"] = "Edit Order";
+    ViewData["Title"] = $"Edit order #{Model.Id}";
+    ViewData["FullWidth"] = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 }
 
 <form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
 
-    <div class="container mt-4">
+    <div class="admin-surface py-4">
+        <div class="container admin-page">
 
-        <input type="hidden" asp-for="Id" />
+            <header class="admin-page__header d-flex flex-column flex-md-row justify-content-md-between align-items-md-start gap-3 mb-4">
+                <div>
+                    <h1 class="admin-page__title">Edit order #@Model.Id</h1>
+                    <p class="admin-page__meta mb-0">Update table, time, status, quantities, or remove line items.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary border-0 bg-white shadow-sm">Cancel</a>
+                    <button type="submit" class="btn btn-admin-primary">
+                        <i class="bi bi-check-lg me-1"></i> Save changes
+                    </button>
+                </div>
+            </header>
 
-        <div class="row" id="orders">
-
-            <!-- ================= LEFT : ORDER INFO ================= -->
-            <div class="col-lg-4">
-
-                <div class="card shadow-sm border-0">
-
-                    <div class="card-header bg-warning text-dark">
-                        <h5 class="mb-0">✏️ Edit Order</h5>
-                    </div>
-
-                    <div class="card-body">
-
-                        <!-- TABLE -->
-                        <div class="mb-3">
-                            <label class="form-label">🍽 Table</label>
-
-                            <select asp-for="TableId"
-                                    asp-items="ViewBag.TableId"
-                                    class="form-select">
-                            </select>
+            <div class="row g-4" id="orders">
+                <div class="col-lg-4">
+                    <section class="admin-panel h-100">
+                        <div class="admin-panel__head">
+                            <h2 class="admin-panel__title">Order details</h2>
                         </div>
-
-                        <!-- ORDER TIME -->
-                        <div class="mb-3">
-                            <label class="form-label">⏰ Order Time</label>
-
-                            <input asp-for="OrderTime"
-                                   class="form-control"
-                                   type="datetime-local" />
-                        </div>
-
-                        <!-- STATUS -->
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-
-                            <select asp-for="Status" class="form-select">
-                                <option value="Preparing">Preparing</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Canceled">Canceled</option>
-                            </select>
-                        </div>
-
-                        <!-- NOTE -->
-                        <div class="mb-3">
-                            <label class="form-label">📝 Note</label>
-
-                            <textarea asp-for="Note"
-                                          class="form-control">
-                        </textarea>
+                        <div class="p-4">
+                            <div class="mb-3">
+                                <label class="form-label admin-toolbar__label" style="text-transform: none; letter-spacing: normal;">Table</label>
+                                <select asp-for="TableId" asp-items="ViewBag.TableId" class="form-select"></select>
                             </div>
-
+                            <div class="mb-3">
+                                <label class="form-label admin-toolbar__label" style="text-transform: none; letter-spacing: normal;">Order time</label>
+                                <input asp-for="OrderTime" class="form-control" type="datetime-local" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label admin-toolbar__label" style="text-transform: none; letter-spacing: normal;">Status</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="Preparing">Preparing</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label admin-toolbar__label" style="text-transform: none; letter-spacing: normal;">Note</label>
+                                <textarea asp-for="Note" class="form-control" rows="3"></textarea>
+                            </div>
                         </div>
-
-                        <div class="card-footer text-center bg-white">
-
-                            <button type="submit"
-                                    class="btn btn-success">
-                                💾 Save Changes
-                            </button>
-
-                            <a asp-action="Details"
-                                   asp-route-id="@Model.Id"
-                                   class="btn btn-secondary">
-                                Cancel
-                            </a>
-
-                        </div>
-
-                    </div>
-
+                    </section>
                 </div>
 
-                <!-- ================= RIGHT : ORDER ITEMS ================= -->
                 <div class="col-lg-8">
-
-                    <div class="card shadow-sm border-0">
-
-                        <div class="card-header bg-dark text-white">
-                            <h5 class="mb-0">🍔 Edit Ordered Items</h5>
+                    <section class="admin-panel">
+                        <div class="admin-panel__head">
+                            <h2 class="admin-panel__title">Line items</h2>
                         </div>
-
-                        <div class="card-body">
+                        <div class="p-3 p-md-4">
 
                             @if (Model.Items == null || !Model.Items.Any())
                             {
-                                <div class="alert alert-info">
-                                    No items in this order.
+                                <div class="admin-empty border-0 py-5">
+                                    <i class="bi bi-inbox d-block"></i>
+                                    <p class="mb-0">No items in this order.</p>
                                 </div>
                             }
                             else
@@ -107,93 +79,51 @@
                                 @for (int i = 0; i < Model.Items.Count; i++)
                                 {
                                     <div id="row-@i"
-                                         class="order-item d-flex align-items-center mb-4 border-bottom p-3 @((Model.Items[i].IsAvailable == false) ? "border-warning bg-warning-subtle" : "")">
+                                         class="order-item d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-3 p-3 rounded border @(Model.Items[i].IsAvailable == false ? "border-warning bg-warning-subtle" : "")"
+                                         style="border-color: var(--admin-border, #e2e8f0);">
 
-                                        <!-- hidden fields -->
                                         <input type="hidden" asp-for="Items[i].Id" />
                                         <input type="hidden" asp-for="Items[i].MenuItemId" />
-                                        <input type="hidden"
-                                            asp-for="Items[i].IsDeleted"
-                                            class="is-deleted" 
-                                              value="false" />
+                                        <input type="hidden" asp-for="Items[i].IsDeleted" class="is-deleted" value="false" />
 
-                                        <!-- IMAGE -->
                                         <img src="@(Model.Items[i].ImageUrl ?? Url.Content("~/imgs/food.png"))"
-                                             width="80"
-                                             height="80"
-                                             class="rounded shadow-sm me-3"
-                                             style="object-fit:cover;" />
+                                             width="72"
+                                             height="72"
+                                             class="rounded border flex-shrink-0"
+                                             style="object-fit:cover;" alt="" />
 
-                                        <!-- INFO -->
-                                        <div class="flex-grow-1">
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="fw-semibold">@Model.Items[i].MenuItemName</div>
+                                            <div class="small text-muted">@Model.Items[i].Price.ToString("N0") đ / unit</div>
+                                        </div>
 
-                                            <h5 class="fw-bold">
-                                                @Model.Items[i].MenuItemName
-                                            </h5>
-
-                                            <div class="text-muted">
-                                                Price:
-                                                @Model.Items[i].Price.ToString("N0") VNĐ
+                                        <div class="d-flex align-items-center gap-3 flex-shrink-0">
+                                            <div>
+                                                <label class="small text-muted d-block mb-1">Qty</label>
+                                                <input asp-for="Items[i].Quantity" class="form-control text-center" style="width: 5rem;" />
                                             </div>
-
-                                        </div>
-
-                                        <!-- QUANTITY -->
-                                        <div class="text-center me-3">
-
-                                            <label>Qty</label>
-
-                                            <input asp-for="Items[i].Quantity"
-                                                   class="form-control text-center"
-                                                   style="width:80px" />
-
-                                        </div>
-
-                                        <!-- REMOVE -->
-                                        <div>
-
-                                            <button type="button"
-                                                    class="btn btn-sm btn-danger"
-                                                    onclick="removeItem(this)">
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)">
                                                 Remove
                                             </button>
-
                                         </div>
-
                                     </div>
                                 }
                             }
-
                         </div>
-
-                    </div>
-
+                    </section>
                 </div>
-
             </div>
 
         </div>
+    </div>
+</form>
 
-    </form>
-
-
-    <script>
-        function removeItem(btn) {
-
-            const item = btn.closest('.order-item');
-			console.log(item);
-
-            if (!item) return;
-
-            // set delete flag
-            const deleteInput = item.querySelector('.is-deleted');
-            if (deleteInput)
-                deleteInput.value = "true";
-
-            // hide UI
-                item.style.setProperty('display', 'none', 'important');
-
-        console.log('Item hidden');
-        }
-    </script>
-   
+<script>
+    function removeItem(btn) {
+        const item = btn.closest('.order-item');
+        if (!item) return;
+        const deleteInput = item.querySelector('.is-deleted');
+        if (deleteInput) deleteInput.value = "true";
+        item.style.setProperty('display', 'none', 'important');
+    }
+</script>

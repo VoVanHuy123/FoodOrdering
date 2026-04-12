@@ -30,6 +30,9 @@ namespace FoodOrdering.Controllers
         [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> Index(OrderQuery query)
         {
+            if (!query.AllDates && !query.OrderDate.HasValue)
+                query.OrderDate = DateOnly.FromDateTime(DateTime.Today);
+
             var result = await _orderService.GetAllAsync(query);
 
             ViewBag.Query = query;

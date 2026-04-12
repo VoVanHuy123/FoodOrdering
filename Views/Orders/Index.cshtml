@@ -1,208 +1,212 @@
 ﻿@model FoodOrdering.DTOs.PagedResult<FoodOrdering.DTOs.OrderDTO>
 
 @{
+    ViewData["Title"] = "Orders";
+    ViewData["FullWidth"] = true;
     var query = ViewBag.Query as FoodOrdering.DTOs.OrderQuery;
+    int totalPages = Model.PageSize > 0
+        ? (int)Math.Ceiling((double)Model.TotalItems / Model.PageSize)
+        : 0;
+
+    string StatusBadgeClass(string? s) => s switch
+    {
+        "Completed" => "admin-badge admin-badge--completed",
+        "Pending" => "admin-badge admin-badge--pending",
+        "Preparing" => "admin-badge admin-badge--preparing",
+        "Cancelled" => "admin-badge admin-badge--cancelled",
+        _ => "admin-badge admin-badge--cancelled"
+    };
+
+    (string Value, string Label)[] statusFilterOptions =
+    [
+        ("", "All statuses"),
+        ("Pending", "Pending"),
+        ("Preparing", "Preparing"),
+        ("Completed", "Completed"),
+        ("Cancelled", "Cancelled")
+    ];
 }
- <style>
-    .card {
-        transition: 0.3s;
-        border-radius: 10px;
-    }
-    .card:hover {
-        transform: translateY(-5px);
-    } 
-</style> 
 
-<div class="container mt-4">
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
 
+<div class="admin-surface py-4">
+    <div class="container admin-page">
 
-
-    <!-- SEARCH + FILTER -->
-    <form method="get" class="row g-3 mb-4">
-
-        <div class="col-md-3">
-            <input name="TableNumber"
-                   value="@query?.TableNumber"
-                   class="form-control"
-                   placeholder="Table Number" />
-        </div>
-
-        <div class="col-md-3">
-            <select name="Status" class="form-select">
-
-                <option value="">All Status</option>
-                <option value="Preparing"
-                        selected="@(query?.Status == "Preparing")">
-                    Preparing
-                </option>
-                <option value="Pending"
-                        selected="@(query?.Status == "Pending")">
-                    Pending
-                </option>
-
-                <option value="Completed"
-                        selected="@(query?.Status == "Completed")">
-                    Completed
-                </option>
-
-                <option value="Cancelled"
-                        selected="@(query?.Status == "Cancelled")">
-                    Cancelled
-                </option>
-
-            </select>
-        </div>
-
-        <div class="col-md-2">
-            <button class="btn btn-primary w-100">
-                Search
-            </button>
-        </div>
-        @if(User.IsInRole("Admin"))
+        <header class="admin-page__header d-flex flex-column flex-md-row justify-content-md-between align-items-md-start gap-3">
+            <div>
+                <h1 class="admin-page__title">Orders</h1>
+            </div>
+            @if (User.IsInRole("Admin"))
             {
-                <div class="col-md-2">
-            <a asp-action="Create" class="btn btn-success">
-            + Create Order
-        </a>
-        </div>
+                <a asp-action="Create" class="btn btn-admin-primary">
+                    <i class="bi bi-plus-lg me-1"></i> New order
+                </a>
             }
-            
-           
-    </form>
+        </header>
 
-    <!-- ORDER CARDS -->
-    <div class="row" id="orders">
-
-        @if (Model.Items != null && Model.Items.Any())
-        {
-            @foreach (var order in Model.Items)
-            {
-                <div id="order-@order.Id" class="col-md-6 col-lg-4 mb-4">
-
-                    <div class="card shadow-sm border-0 h-100
-                        @(order.IsError ? "border-warning bg-warning-subtle" : "")">
-
-                        <div class="card-body">
-
-                            <!-- HEADER -->
-                            <div class="d-flex justify-content-between">
-
-                                <h5 class="fw-bold">
-                                    🍽 Table @order.TableId
-                                </h5>
-
-                                <span class="badge
-                                    @(order.Status == "Completed" ? "bg-success" :
-                                                                            order.Status == "Pending" ? "bg-warning text-dark" :
-                                                                            "bg-secondary")">
-
-                                    @order.Status
-                                </span>
-
-                            </div>
-                            @if (order.IsError)
-                {
-                            <div class="mt-2">
-                                <span class="badge bg-danger">
-                                    ⚠ Has item out of stock
-                                </span>
-                            </div>
-                }
-
-                            <hr />
-
-                            <!-- INFO -->
-                            <p class="mb-2">
-                                <strong>Time:</strong><br />
-                                @order.OrderTime.ToString("dd/MM/yyyy HH:mm")
-                            </p>
-
-                            <p class="mb-2">
-                                <strong>Total:</strong><br />
-                                <span class="text-danger fw-bold fs-5">
-                                    @order.TotalAmount.ToString("N0") VNĐ
-                                </span>
-                            </p>
-
-                            @if (!string.IsNullOrEmpty(order.Note))
-                            {
-                                <p class="text-muted">
-                                    📝 @order.Note
-                                </p>
-                            }
-
-                        </div>
-
-                        <!-- FOOTER -->
-                        <div class="card-footer bg-white border-0">
-
-                            <div class="d-flex justify-content-between">
-
-                                <a asp-action="Details"
-                                       asp-route-id="@order.Id"
-                                       class="btn btn-outline-primary btn-sm">
-                                    Details
-                                </a>
-
-                                <a asp-action="Edit"
-                                       asp-route-id="@order.Id"
-                                       class="btn btn-outline-warning btn-sm">
-                                    Edit
-                                </a>
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    <a asp-action="Delete"
-                                       asp-route-id="@order.Id"
-                                       class="btn btn-outline-danger btn-sm">
-                                    Delete
-                                </a>    
-                                }
-                                
-
-                            </div>
-
-                        </div>
-
+        <form method="get" class="admin-toolbar">
+            <input type="hidden" name="PageNumber" value="1" />
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3 col-lg-2">
+                    <div class="admin-toolbar__label">Order date</div>
+                    <input type="date"
+                           name="OrderDate"
+                           class="form-control"
+                           value="@(query?.OrderDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-3 col-lg-2 d-flex align-items-end">
+                    <div class="form-check mb-1">
+                        @if (query?.AllDates == true)
+                        {
+                            <input class="form-check-input" type="checkbox" name="AllDates" value="true" id="allDates" checked />
+                        }
+                        else
+                        {
+                            <input class="form-check-input" type="checkbox" name="AllDates" value="true" id="allDates" />
+                        }
+                        <label class="form-check-label small" for="allDates">All dates</label>
                     </div>
+                </div>
+                <div class="col-md-3 col-lg-2">
+                    <div class="admin-toolbar__label">Table number</div>
+                    <input name="TableNumber"
+                           value="@query?.TableNumber"
+                           class="form-control"
+                           placeholder="e.g. 5"
+                           autocomplete="off" />
+                </div>
+                <div class="col-md-3 col-lg-2">
+                    <div class="admin-toolbar__label">Status</div>
+                    <select name="Status" class="form-select">
+                        @foreach (var o in statusFilterOptions)
+                        {
+                            var sel = string.IsNullOrEmpty(o.Value)
+                                ? string.IsNullOrEmpty(query?.Status)
+                                : query?.Status == o.Value;
+                            if (sel)
+                            {
+                                <option value="@o.Value" selected>@o.Label</option>
+                            }
+                            else
+                            {
+                                <option value="@o.Value">@o.Label</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 col-lg-2">
+                    <button type="submit" class="btn btn-admin-primary w-100">
+                        <i class="bi bi-funnel me-1"></i> Apply
+                    </button>
+                </div>
+            </div>
+        </form>
 
+        <section class="admin-panel">
+            <div class="admin-panel__head">
+                <h2 class="admin-panel__title">Order list</h2>
+                <span class="small text-muted font-monospace">@Model.TotalItems total</span>
+            </div>
+
+            @if (Model.Items != null && Model.Items.Any())
+            {
+                <div class="admin-table-wrap">
+                    <table class="table admin-table mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Table</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Time</th>
+                                <th scope="col" class="text-end">Total</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.Items)
+                            {
+                                <tr class="@(order.IsError ? "admin-row-alert" : null)">
+                                    <td>
+                                        <span class="admin-table__id">#@order.Id</span>
+                                        @if (order.IsError)
+                                        {
+                                            <span class="admin-badge admin-badge--error ms-1" title="Contains unavailable items">Stock</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-grid-3x3-gap text-muted me-1"></i>
+                                        <span class="fw-medium">@order.TableNumber</span>
+                                    </td>
+                                    <td>
+                                        <span class="@StatusBadgeClass(order.Status)">@(order.Status ?? "—")</span>
+                                    </td>
+                                    <td>
+                                        <span class="admin-table__mono">@order.OrderTime.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="admin-table__amount">@order.TotalAmount.ToString("N0") đ</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="admin-actions">
+                                            <a asp-action="Details" asp-route-id="@order.Id" class="admin-btn-icon">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@order.Id" class="admin-btn-icon">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                            @if (User.IsInRole("Admin"))
+                                            {
+                                                <a asp-action="Delete" asp-route-id="@order.Id" class="admin-btn-icon admin-btn-icon--danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                                @if (!string.IsNullOrEmpty(order.Note))
+                                {
+                                    <tr class="border-0">
+                                        <td colspan="6" class="pt-0 pb-3 small text-muted border-0">
+                                            <i class="bi bi-sticky me-1"></i>@order.Note
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
                 </div>
             }
-        }
-        else
-        {
-            <div class="text-center text-muted">
-                No orders found.
-            </div>
-        }
-
-    </div>
-
-    <!-- PAGINATION -->
-    @{
-        int totalPages =
-        (int)Math.Ceiling((double)Model.TotalItems / Model.PageSize);
-    }
-
-    <nav>
-        <ul class="pagination justify-content-center">
-
-            @for (int i = 1; i <= totalPages; i++)
+            else
             {
-                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
-
-                    <a class="page-link"
-                           asp-action="Index"
-                           asp-route-PageNumber="@i"
-                           asp-route-TableNumber="@query?.TableNumber"
-                           asp-route-Status="@query?.Status">
-
-                        @i
-                    </a>
-
-                </li>
+                <div class="admin-empty">
+                    <i class="bi bi-inbox d-block"></i>
+                    <p class="mb-0 fw-medium">No orders match your filters.</p>
+                    <p class="small mb-0 mt-1">Try clearing filters or create a new order.</p>
+                </div>
             }
 
-        </ul>
-    </nav>
+            @if (totalPages > 1)
+            {
+                <nav class="admin-pagination" aria-label="Orders pagination">
+                    <ul class="pagination justify-content-center mb-0 flex-wrap">
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-PageNumber="@i"
+                                   asp-route-TableNumber="@query?.TableNumber"
+                                   asp-route-Status="@query?.Status"
+                                   asp-route-OrderDate="@query?.OrderDate"
+                                   asp-route-AllDates="@query?.AllDates">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        </section>
 
+    </div>
 </div>
