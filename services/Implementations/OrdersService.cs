@@ -82,6 +82,14 @@ namespace FoodOrdering.services.Implementations
                 orders = orders.Where(o => o.Status == query.Status);
             }
 
+            // ===== FILTER ORDER DATE (local day) =====
+            if (!query.AllDates && query.OrderDate.HasValue)
+            {
+                var dayStart = query.OrderDate.Value.ToDateTime(TimeOnly.MinValue);
+                var dayEnd = dayStart.AddDays(1);
+                orders = orders.Where(o => o.OrderTime >= dayStart && o.OrderTime < dayEnd);
+            }
+
             // ===== TOTAL COUNT =====
             var totalItems = await orders.CountAsync();
 
@@ -102,6 +110,7 @@ namespace FoodOrdering.services.Implementations
                 {
                     Id = o.Id,
                     TableId = o.TableId,
+                    TableNumber = o.Table.TableNumber,
                     OrderTime = o.OrderTime,
                     IsError = o.IsError,
                     Status = o.Status,
@@ -123,6 +132,7 @@ namespace FoodOrdering.services.Implementations
         public async Task<OrderDTO?> GetByIdAsync(int id)
         {
             var order = await _context.Orders
+                .Include(o => o.Table)
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.MenuItem)
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -133,6 +143,7 @@ namespace FoodOrdering.services.Implementations
             {
                 Id = order.Id,
                 TableId = order.TableId,
+                TableNumber = order.Table != null ? order.Table.TableNumber : 0,
                 OrderTime = order.OrderTime,
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,

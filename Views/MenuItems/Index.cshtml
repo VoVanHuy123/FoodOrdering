@@ -1,48 +1,67 @@
 ﻿@using FoodOrdering.DTOs
 
-@model PagedResult<FoodOrdering.DTOs.MenuItemDTO>
+@model PagedResult<MenuItemDTO>
 @{
-    var labels = new[] { "Hot", "New", "Sale" };
-    var random = new Random();
-    var label = labels[random.Next(labels.Length)];
+    ViewData["Title"] = "Menu items";
+    var categoryId = int.TryParse(ViewContext.HttpContext.Request.Query["CategoryId"], out var cid) ? cid : 0;
+    var searchText = ViewContext.HttpContext.Request.Query["Search"].ToString();
+    int totalPages = Model.PageSize > 0
+        ? (int)Math.Ceiling((double)Model.TotalItems / Model.PageSize)
+        : 0;
 }
 
 <style>
     .menu-link {
         display: block;
-        padding: 6px 0;
-        color: #555;
+        padding: 10px 0;
+        color: #475569;
         text-decoration: none;
-        border-bottom: 1px dashed #ddd;
+        border-bottom: 1px dashed #e2e8f0;
     }
 
-        .menu-link:hover {
-            color: orange;
-        }
+    .menu-link:hover,
+    .menu-link.active {
+        color: #ca8a04;
+        font-weight: 600;
+    }
 
     .menu-card {
-        transition: 0.3s;
-        border-radius: 10px;
+        transition: transform .25s ease, box-shadow .25s ease;
+        border-radius: 16px;
+        overflow: hidden;
     }
 
-        .menu-card:hover {
-            transform: translateY(-5px);
-        }
+    .menu-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+    }
 
-        .menu-card img {
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-        }
+    .menu-card img {
+        height: 220px;
+        object-fit: cover;
+    }
 
-    .badge {
+    .menu-card .card-body {
+        min-height: 140px;
+    }
+
+    .menu-card .badge {
         font-size: 0.75rem;
+    }
+
+    .menu-meta {
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+    .font_head{
+        font-family: "Playfair Display", Georgia, serif;
     }
 </style>
 @if (User.IsInRole("Admin"))
 {
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold">🧾 Menu manager</h2>
+            <h2 class=" font_head">Menu manager</h2>
 
             <div>
                 <a asp-action="Create" class="btn btn-success">
@@ -133,33 +152,26 @@
                     <div class="col-md-4 mb-4">
 
                         <a href="@Url.Action("Details", "MenuItems", new { id = item.Id })" style="text-decoration:none;color:inherit;">
-                        <div class="card menu-card h-100 border-0 shadow-sm">
-                            <!-- Badge -->
-                            @* <span class="badge bg-warning position-absolute m-2">Hot</span> *@
+                            <div class="card menu-card h-100 border-0 shadow-sm">
+                                <div class="position-relative">
+                                    <span class="badge bg-warning position-absolute top-0 start-0 m-3">@item.CategoryName</span>
+                                    <span class="badge position-absolute top-0 end-0 m-3 @(item.IsAvailable ? "bg-success" : "bg-secondary")">@(item.IsAvailable ? "Available" : "Out of Stock")</span>
+                                </div>
+                                <img src="@(
+                                        string.IsNullOrEmpty(item.ImageUrl)
+                                            ? Url.Content("~/imgs/food.png")
+                                            : item.ImageUrl
+                                    )"
+                                     class="card-img-top"
+                                     style="height:200px; object-fit:cover;" />
 
-                            <span class="badge bg-warning position-absolute m-2 ">@label</span>
-                                <span class="badge position-absolute top-0 end-0 m-2 @(item.IsAvailable ? "bg-success" : "bg-secondary")">@(item.IsAvailable ? "Available" : "Out of Stock")</span>
-                            <!-- Image -->
-                            <img src="@(
-                                    string.IsNullOrEmpty(item.ImageUrl)
-                                    ? Url.Content("~/imgs/food.png")
-                                    : item.ImageUrl
-                                )" 
-                                 class="card-img-top"
-                                 style="height:200px; object-fit:cover;" />
-
-                            <!-- Body -->
-                             <div class="card-body text-center">
-
-                                <h6 class="fw-bold">@item.Name</h6>
-
-                                <p class="text-danger fw-bold">
-                                    $ @item.Price
-                                </p>
-
-                            </div> 
-
-                        </div>
+                                <div class="card-body text-center">
+                                    <h6 class="fw-bold">@item.Name</h6>
+                                    <p class="text-danger fw-bold">
+                                        $ @item.Price
+                                    </p>
+                                </div>
+                            </div>
                         </a>
                     </div>
                 }

@@ -119,6 +119,12 @@ publish/
 wwwroot/dist/
 
 ############################
+# Local design / temporary assets
+############################
+.cline/
+img_temp/
+
+############################
 # Secrets
 ############################
 secrets.json

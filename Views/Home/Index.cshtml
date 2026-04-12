@@ -1,81 +1,223 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model List<FoodOrdering.Models.MenuItems>
+@{
+    ViewData["Title"] = "Home";
     ViewData["FullWidth"] = true;
+    ViewData["HomeFullViewportHero"] = true;
+    var best = Model?
+        .Where(m => m.IsAvailable)
+        .Take(3)
+        .ToList() ?? new List<FoodOrdering.Models.MenuItems>();
 }
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>Home</title>
-
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
-    <style>
-            body {
-                margin: 0;
-            }
-
-            .hero {
-                height: calc(100vh - 70px); /* trừ chiều cao navbar */
-                width: 100%;
-                background: url('/imgs/food_background.jpg') center/cover no-repeat;
-                position: relative;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .overlay {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.6);
-            }
-
-            .content {
-                position: relative;
-                color: white;
-                text-align: center;
-            }
-
-                .content h1 {
-                    font-size: 70px;
-                    font-weight: 800;
-                }
-
-                .content span {
-                    color: #ffc107;
-                }
-
-            .btn_homepage {
-                background: #ffc107;
-                padding: 15px 30px;
-                border-radius: 8px;
-                text-decoration: none;
-                color: black;
-                font-weight: bold;
-            }
-    </style>
-</head>
-
-<body>
-
-    <section class="hero">
-        <div class="overlay"></div>
-
-        <div class="content">
-            <h1>HOT & FRESH <br><span>FOOD</span></h1>
-            <p>Delicious food made just for you</p>
-            @if (User.Identity.IsAuthenticated == false)
+<div class="home-landing">
+    <section class="home-hero position-relative d-flex align-items-center justify-content-center text-center text-white">
+        <div class="home-hero__bg"></div>
+        <div class="home-hero__overlay"></div>
+        <div class="position-relative px-3 py-5" style="max-width: 52rem;">
+            <h1 class="home-hero__title font-serif mb-3">Happier tables</h1>
+            <p class="home-hero__lead mb-4 mx-auto">
+                We set out to make dining more joyful — fresh food, simple ordering, and a warm welcome every time.
+            </p>
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <a class="btn home-cta-btn btn-lg rounded-0 px-4" asp-controller="MenuItems" asp-action="Index">View menu</a>
+                @if (User.Identity?.IsAuthenticated != true)
                 {
-                    <form asp-controller="Auth" asp-action="Login" method="get">
-                        <button class="btn_homepage">Login</button>
-                    </form>
+                    <a class="btn btn-outline-light btn-lg rounded-0 px-4" asp-controller="Auth" asp-action="Login">Sign in</a>
                 }
-                
+            </div>
         </div>
     </section>
 
-</body>
-</html>
+    <section class="home-band text-white text-center py-5 px-3">
+        <div class="container py-lg-3">
+            <h2 class="font-serif display-6 mb-3">A taste for every craving</h2>
+            <p class="mb-0 mx-auto home-band__text">
+                From light bites to hearty plates — explore categories, seasonal picks, and chef favorites in one place.
+            </p>
+        </div>
+    </section>
+
+    <section id="story" class="home-story py-5 px-3">
+        <div class="container">
+            <h2 class="font-serif text-center mb-2 home-story__heading">Why you will love FoodOrdering</h2>
+            <p class="text-center text-muted mb-5 mx-auto" style="max-width: 36rem;">
+                Thoughtful design for guests and staff — fast QR ordering, clear kitchen flow, and reliable service.
+            </p>
+            <div class="row g-4 text-center text-md-start">
+                <div class="col-md-4">
+                    <div class="home-story__icon mb-3"><i class="bi bi-phone"></i></div>
+                    <h3 class="h5 font-serif">Order from your table</h3>
+                    <p class="text-muted small mb-0">Scan, browse the menu, and send orders straight to the kitchen without waiting.</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="home-story__icon mb-3"><i class="bi bi-lightning-charge"></i></div>
+                    <h3 class="h5 font-serif">Real-time updates</h3>
+                    <p class="text-muted small mb-0">Stay in the loop as orders progress — less back-and-forth, more time to enjoy the meal.</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="home-story__icon mb-3"><i class="bi bi-shield-check"></i></div>
+                    <h3 class="h5 font-serif">Built to last</h3>
+                    <p class="text-muted small mb-0">Solid workflows for busy shifts so your team can focus on hospitality, not paperwork.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-bestsellers py-5 px-3">
+        <div class="container">
+            <h2 class="font-serif text-center mb-2 home-bestsellers__heading">Popular picks</h2>
+            <p class="text-center text-muted mb-5">A few dishes guests order again and again.</p>
+            @if (best.Count == 0)
+            {
+                <p class="text-center text-muted mb-0">No menu items yet — check back soon.</p>
+            }
+            else
+            {
+                <div class="row g-4 justify-content-center">
+                    @foreach (var item in best)
+                    {
+                        var img = string.IsNullOrWhiteSpace(item.ImageUrl)
+                            ? Url.Content("~/imgs/food.png")
+                            : Url.Content(item.ImageUrl);
+                        <div class="col-sm-6 col-lg-4">
+                            <article class="home-card h-100 d-flex flex-column">
+                                <div class="home-card__img-wrap d-flex align-items-center justify-content-center p-4">
+                                    <img src="@img" alt="@item.Name" class="home-card__img img-fluid" />
+                                </div>
+                                <div class="p-3 pt-0 flex-grow-1 d-flex flex-column">
+                                    <h3 class="home-card__title font-serif mt-2">@item.Name</h3>
+                                    @if (!string.IsNullOrWhiteSpace(item.Description))
+                                    {
+                                        <p class="text-muted small flex-grow-1 mb-2">@item.Description</p>
+                                    }
+                                    else
+                                    {
+                                        <div class="flex-grow-1 mb-2"></div>
+                                    }
+                                    <p class="fw-semibold mb-3">@item.Price.ToString("N0") đ</p>
+                                    <a class="btn home-cta-btn btn-sm rounded-0 mt-auto align-self-start" asp-controller="MenuItems" asp-action="Index">Order</a>
+                                </div>
+                            </article>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+<style>
+    .home-landing {
+        --home-mustard: #ca8a04;
+        --home-mustard-dark: #a16207;
+        --home-cream: #fffbeb;
+        --home-butter: #fef3c7;
+        --home-ink: #1c1917;
+    }
+
+    .home-hero {
+        min-height: 50vh;
+    }
+
+    body.body-home-hero .home-hero {
+        min-height: calc(100vh - var(--site-navbar-height, 4.5rem));
+    }
+
+    .home-hero__bg {
+        position: absolute;
+        inset: 0;
+        background: url('@Url.Content("~/imgs/food_background.jpg")') center / cover no-repeat;
+    }
+
+    .home-hero__overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(28, 25, 23, 0.55), rgba(28, 25, 23, 0.72));
+    }
+
+    .home-hero__title {
+        font-size: clamp(2.5rem, 6vw, 3.75rem);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+    }
+
+    .home-hero__lead {
+        font-size: 1.05rem;
+        max-width: 28rem;
+        opacity: 0.95;
+    }
+
+    .home-cta-btn {
+        background: var(--home-mustard);
+        border: none;
+        color: #fff !important;
+        font-weight: 600;
+    }
+
+        .home-cta-btn:hover {
+            background: var(--home-mustard-dark);
+            color: #fff !important;
+        }
+
+    .home-band {
+        background: linear-gradient(135deg, #ca8a04 0%, #eab308 100%);
+    }
+
+    .home-band__text {
+        max-width: 40rem;
+        opacity: 0.95;
+    }
+
+    .home-story {
+        background: var(--home-cream);
+    }
+
+    .home-story__heading {
+        color: #b45309;
+    }
+
+    .home-story__icon {
+        font-size: 2rem;
+        color: var(--home-mustard);
+    }
+
+    .home-bestsellers {
+        background: var(--home-butter);
+    }
+
+    .home-bestsellers__heading {
+        color: #b45309;
+    }
+
+    .home-card {
+        background: #fff;
+        border: 1px solid #e7e5e4;
+        box-shadow: 0 8px 24px rgba(28, 25, 23, 0.06);
+        border-radius: 10px;
+        
+    }
+
+
+    .home-card__img-wrap {
+        background: linear-gradient(180deg, #fef9c3 0%, #fde68a 100%);
+        min-height: 200px;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .home-card__img {
+        max-height: 180px;
+        object-fit: contain;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .home-card__title {
+        font-size: 1.3rem;
+        line-height: 1.35;
+        margin-bottom: 0;
+       
+        /* border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(28, 25, 23, 0.08);
+        background: rgba(255, 251, 235, 0.95);
+        border: 1px solid rgba(231, 229, 228, 0.8); */
+    }
+</style>
