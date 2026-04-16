@@ -63,7 +63,6 @@ namespace FoodOrdering.Controllers
         public async Task<IActionResult> Create()
         {
             var categories = await _categoriesService.GetAllAsync();
-
             ViewBag.CategoryId = new SelectList(categories, "Id", "Name");
             return View();
         }
@@ -82,9 +81,12 @@ namespace FoodOrdering.Controllers
 
             if (!ModelState.IsValid)
             {
-                
+                var categories = await _categoriesService.GetAllAsync();
                 ViewBag.CategoryId = new SelectList(categories, "Id", "Name");
                 return View(dto);
+            }
+
+            // Upload Cloudinary
 
 
             }
