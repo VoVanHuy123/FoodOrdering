@@ -1,101 +1,158 @@
-﻿@model IEnumerable<FoodOrdering.DTOs.TableDTO>
-
+﻿@using FoodOrdering.DTOs
+@model IEnumerable<FoodOrdering.DTOs.TableDTO>
 @{
     ViewData["Title"] = "Tables";
+    ViewData["FullWidth"] = true;
+    var query = ViewBag.Query as TablesQuery;
 }
-<style>
-.font_head{
-    font-family: "Playfair Display", Georgia, serif;
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 }
-</style>
 
-<div class="container mt-2 mb-4">
-    @if(User.IsInRole("Admin"))
-    {
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class=" font_head">Restaurant Tables</h2>
+<div class="admin-surface py-4">
+    <div class="container admin-page">
 
-            <a asp-action="Create" class="btn btn-success">
-                + Create Table
-            </a>
-        </div>
-    }
-    
+        <header class="admin-page__header d-flex flex-column flex-md-row justify-content-md-between align-items-md-start gap-3">
+            <div>
+                <h1 class="admin-page__title">Tables</h1>
+                <p class="admin-page__meta mb-0">Default sort by table number and filter by status.</p>
+            </div>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Create" class="btn btn-admin-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Create table
+                </a>
+            }
+        </header>
 
-    <div class="row">
-
-        @foreach (var table in Model)
-        {
-            var statusClass =
-                table.Status == "Available" ? "bg-success" :
-                table.Status == "Occupied" ? "bg-danger" :
-                table.Status == "Reserved" ? "bg-warning text-dark" :
-                "bg-secondary";
-
-            <div class="col-md-4 col-lg-3 mb-4">
-
-                <div class="card shadow-sm border-0 h-100">
-
-                    <div class="card-body text-center">
-
-                        <!-- TABLE NUMBER -->
-                        <h3 class="fw-bold mb-2">
-                            🍽 Table @table.TableNumber
-                        </h3>
-
-                        <!-- STATUS -->
-                        <span class="badge @statusClass mb-3 px-3 py-2" id="table_@table.TableNumber">
-                            @table.Status
-                        </span>
-
-                        <!-- QR CODE -->
-                        @if (!string.IsNullOrEmpty(table.QRCode))
+        <form method="get" class="admin-toolbar">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4 col-lg-3">
+                    <div class="admin-toolbar__label">Status</div>
+                    <select name="Status" class="form-select">
+                        @if (string.IsNullOrEmpty(query?.Status))
                         {
-                            <div class="mb-3">
-                                <img src="@table.QRCode"
-                                     class="img-fluid rounded shadow"
-                                     style="max-height:120px;" />
-                            </div>
+                            <option value="" selected>All statuses</option>
+                        }
+                        else
+                        {
+                            <option value="">All statuses</option>
                         }
 
-                    </div>
+                        @if (query?.Status == "Available")
+                        {
+                            <option value="Available" selected>Available</option>
+                        }
+                        else
+                        {
+                            <option value="Available">Available</option>
+                        }
 
-                    <!-- ACTION BUTTONS -->
-                    <div class="card-footer bg-white border-0">
-                        <div class="d-flex justify-content-between">
+                        @if (query?.Status == "Occupied")
+                        {
+                            <option value="Occupied" selected>Occupied</option>
+                        }
+                        else
+                        {
+                            <option value="Occupied">Occupied</option>
+                        }
 
-                            <a asp-action="Details"
-                                   asp-route-id="@table.Id"
-                                   class="btn btn-outline-primary btn-sm">
-                                Details
-                            </a>
-
-                            <a asp-action="Edit"
-                                   asp-route-id="@table.Id"
-                                   class="btn btn-outline-warning btn-sm">
-                                Edit
-                            </a>
-                            @if(User.IsInRole("Admin"))
-                            {
-                                <a asp-action="Delete"
-                                       asp-route-id="@table.Id"
-                                       class="btn btn-outline-danger btn-sm">
-                                    Delete
-                                </a>
-                            }
-                            
-
-                        </div>
-                    </div>
-
+                        @if (query?.Status == "Reserved")
+                        {
+                            <option value="Reserved" selected>Reserved</option>
+                        }
+                        else
+                        {
+                            <option value="Reserved">Reserved</option>
+                        }
+                    </select>
                 </div>
-
+                <div class="col-md-2 col-lg-2">
+                    <button type="submit" class="btn btn-admin-primary w-100">
+                        <i class="bi bi-funnel me-1"></i> Apply
+                    </button>
+                </div>
             </div>
-        }
+        </form>
+
+        <section class="admin-panel">
+            <div class="admin-panel__head">
+                <h2 class="admin-panel__title">Table list</h2>
+                <span class="small text-muted font-monospace">@Model.Count() total</span>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="admin-table-wrap">
+                    <table class="table admin-table mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Table</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">QR Code</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var table in Model)
+                            {
+                                var statusClass = table.Status == "Available" ? "admin-badge admin-badge--completed" :
+                                                  table.Status == "Occupied" ? "admin-badge admin-badge--error" :
+                                                  table.Status == "Reserved" ? "admin-badge admin-badge--pending" :
+                                                  "admin-badge admin-badge--cancelled";
+                                <tr>
+                                    <td>
+                                        <span class="admin-table__id">Table @table.TableNumber</span>
+                                    </td>
+                                    <td>
+                                        <span id="table_@table.TableNumber" class="@statusClass">@table.Status</span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(table.QRCode))
+                                        {
+                                            <img src="@table.QRCode" alt="QR" class="rounded" style="height:56px; width:auto; max-width:120px;" />
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No QR</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="admin-actions justify-content-end">
+                                            <a asp-action="Details" asp-route-id="@table.Id" class="admin-btn-icon">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@table.Id" class="admin-btn-icon">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                            @if (User.IsInRole("Admin"))
+                                            {
+                                                <a asp-action="Delete" asp-route-id="@table.Id" class="admin-btn-icon admin-btn-icon--danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="admin-empty">
+                    <i class="bi bi-inbox d-block"></i>
+                    <p class="mb-0 fw-medium">No tables match your filter.</p>
+                    <p class="small mb-0 mt-1">Clear status filter or add a new table.</p>
+                </div>
+            }
+        </section>
 
     </div>
-
 </div>
-@section Scripts {
+
+@* @section Scripts {
     <script src="~/js/orderHub.js"></script>
-}
+} *@

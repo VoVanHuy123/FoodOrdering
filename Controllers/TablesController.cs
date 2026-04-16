@@ -28,6 +28,7 @@ namespace FoodOrdering.Controllers
         public async Task<IActionResult> Index(TablesQuery query)
         {
             var reslut = await _tablesService.GetAllTablesAsync(query);
+            ViewBag.Query = query;
             return View(reslut);
         }
 

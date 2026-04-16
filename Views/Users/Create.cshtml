@@ -22,8 +22,8 @@
         </select>
     </div>
 
-    <button class="btn btn-success">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Back</a>
+    <button class="btn btn-admin-primary">Save</button>
+    <a asp-action="Index" class="btn btn-admin-secondary">Back</a>
 
 </form> *@
 @model FoodOrdering.DTOs.UserCreateDTO
@@ -100,11 +100,11 @@
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-outline-secondary">
+                            <a asp-action="Index" class="btn btn-admin-secondary">
                                 <i class="fa fa-arrow-left me-1"></i> Back
                             </a>
 
-                            <button type="submit" class="btn btn-success px-4">
+                            <button type="submit" class="btn btn-admin-primary px-4">
                                 <i class="fa fa-save me-1"></i> Save
                             </button>
                         </div>

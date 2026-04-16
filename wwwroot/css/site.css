@@ -29,3 +29,16 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+.btn-admin-primary {
+    background: var(--admin-primary-btn);
+    border: none;
+    color: #fff !important;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+}
+
+    .btn-admin-primary:hover {
+        background: var(--admin-primary-btn-hover);
+        color: #fff !important;
+    }

@@ -4,7 +4,7 @@ namespace FoodOrdering.Services.Interfaces
 {
     public interface ICategoriesService
     {
-        Task<List<CategoryDTO>> GetAllAsync();
+        Task<List<CategoryDTO>> GetAllAsync(CategoriesQuery? query = null);
 
         Task<CategoryDTO?> GetByIdAsync(int id);
 

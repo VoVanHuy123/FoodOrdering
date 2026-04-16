@@ -28,7 +28,7 @@
         </div>
     </section>
 
-    <section class="home-band text-white text-center py-5 px-3">
+    <section class="home-band animate-on-scroll text-white text-center py-5 px-3">
         <div class="container py-lg-3">
             <h2 class="font-serif display-6 mb-3">A taste for every craving</h2>
             <p class="mb-0 mx-auto home-band__text">
@@ -37,7 +37,7 @@
         </div>
     </section>
 
-    <section id="story" class="home-story py-5 px-3">
+    <section id="story" class="home-story animate-on-scroll py-5 px-3">
         <div class="container">
             <h2 class="font-serif text-center mb-2 home-story__heading">Why you will love FoodOrdering</h2>
             <p class="text-center text-muted mb-5 mx-auto" style="max-width: 36rem;">
@@ -80,7 +80,7 @@
                             ? Url.Content("~/imgs/food.png")
                             : Url.Content(item.ImageUrl);
                         <div class="col-sm-6 col-lg-4">
-                            <article class="home-card h-100 d-flex flex-column">
+                            <article class="home-card animate-on-scroll h-100 d-flex flex-column">
                                 <div class="home-card__img-wrap d-flex align-items-center justify-content-center p-4">
                                     <img src="@img" alt="@item.Name" class="home-card__img img-fluid" />
                                 </div>
@@ -220,4 +220,65 @@
         background: rgba(255, 251, 235, 0.95);
         border: 1px solid rgba(231, 229, 228, 0.8); */
     }
+
+    .animate-on-scroll {
+        opacity: 0;
+        transform: translateY(28px) scale(0.98);
+        transition: opacity 0.75s ease, transform 0.75s ease;
+        will-change: opacity, transform;
+    }
+
+    .animate-on-scroll.in-view {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .animate-on-scroll {
+            transition: none;
+            transform: none;
+        }
+    }
 </style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var elements = document.querySelectorAll('.animate-on-scroll');
+
+            function revealElement(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                    observer.unobserve(entry.target);
+                }
+            }
+
+            if ('IntersectionObserver' in window) {
+                var observer = new IntersectionObserver(function (entries) {
+                    entries.forEach(revealElement);
+                }, {
+                    root: null,
+                    rootMargin: '0px 0px -120px 0px',
+                    threshold: 0.15
+                });
+
+                elements.forEach(function (element) {
+                    observer.observe(element);
+                });
+            } else {
+                function revealOnScroll() {
+                    elements.forEach(function (element) {
+                        var rect = element.getBoundingClientRect();
+                        if (rect.top < window.innerHeight * 0.85) {
+                            element.classList.add('in-view');
+                        }
+                    });
+                }
+
+                revealOnScroll();
+                window.addEventListener('scroll', revealOnScroll);
+                window.addEventListener('resize', revealOnScroll);
+            }
+        });
+    </script>
+}

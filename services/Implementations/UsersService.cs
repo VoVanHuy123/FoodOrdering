@@ -19,9 +19,23 @@ namespace FoodOrdering.services.Implementations
         // =====================
         // GET ALL
         // =====================
-        public async Task<List<UserDTO>> GetAllAsync()
+        public async Task<List<UserDTO>> GetAllAsync(UsersQuery? query = null)
         {
-            return await _context.Users
+            var users = _context.Users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query?.Name))
+            {
+                var search = query.Name.Trim().ToLower();
+                users = users.Where(u => u.FullName!.ToLower().Contains(search)
+                                          || u.Username!.ToLower().Contains(search));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query?.Role))
+            {
+                users = users.Where(u => u.Role == query.Role);
+            }
+
+            return await users
                 .Select(u => new UserDTO
                 {
                     Id = u.Id,

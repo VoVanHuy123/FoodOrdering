@@ -148,7 +148,10 @@ orderConnection.on("TableOccupied",
 
             if (badge) {
                 badge.className =
-                    `badge ${statusClass} mb-3 px-3 py-2`;
+                    table.status === "Available" ? "admin-badge admin-badge--completed" :
+                    table.status === "Occupied" ? "admin-badge admin-badge--error" :
+                    table.status === "Reserved" ? "admin-badge admin-badge--pending" :
+                    "admin-badge admin-badge--cancelled";
 
                 badge.innerText = table.status;
             }
@@ -205,37 +208,127 @@ orderConnection.on("TableOccupied",
 
 
 
+function escapeHtml(unsafe) {
+    if (!unsafe) return "";
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/\'/g, "&#039;");
+}
+
+function findOrderRow(orderId) {
+    let row = document.getElementById(`order-row-${orderId}`);
+    if (!row) {
+        row = document.querySelector(`[data-order-id="${orderId}"]`);
+    }
+    if (!row) {
+        row = document.querySelector(`tr[data-order-id='${orderId}']`);
+    }
+    return row;
+}
+
+function formatOrderTime(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    return new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+}
+
+function getOrderStatusBadgeClass(status) {
+    switch (status) {
+        case 'Completed':
+            return 'admin-badge admin-badge--completed';
+        case 'Pending':
+            return 'admin-badge admin-badge--pending';
+        case 'Preparing':
+            return 'admin-badge admin-badge--preparing';
+        case 'Cancelled':
+            return 'admin-badge admin-badge--cancelled';
+        default:
+            return 'admin-badge admin-badge--cancelled';
+    }
+}
+
+
 // ===============================
 // UPDATE ORDER
 // ===============================
 orderConnection.on("OrderUpdated", function (order) {
     console.log("Order Updated:", order);
 
-    const orderCard = document.getElementById(`order-${order.id}`);
+    const orderId = order.id ?? order.Id;
+    const orderStatus = order.status ?? order.Status;
+
+    const orderCard = document.getElementById(`order-${orderId}`);
+    const orderRow = findOrderRow(orderId);
     console.log("Order card:", orderCard);
+    console.log("Order row:", orderRow);
 
-    if (orderCard) {
-        const badge = orderCard.querySelector(".badge");
-        if (badge) {
-            badge.innerText = order.status;
-            badge.className = "badge";
+    if (orderRow) {
+        const statusBadge = orderRow.querySelector('.order-status span');
+        if (statusBadge) {
+            statusBadge.innerText = orderStatus;
+            statusBadge.className = getOrderStatusBadgeClass(orderStatus);
+        }
 
-            if (order.status === "Completed") {
-                badge.classList.add("bg-success");
-            } else if (order.status === "Pending") {
-                badge.classList.add("bg-warning", "text-dark");
+        const tableNumber = orderRow.querySelector('.order-table-number .fw-medium');
+        if (tableNumber && order.tableNumber !== undefined) {
+            tableNumber.innerText = order.tableNumber;
+        }
+
+        const noteCell = orderRow.querySelector('.order-note');
+        if (noteCell) {
+            if (order.note) {
+                noteCell.innerHTML = `
+                    <div class="small text-muted text-truncate" style="max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(order.note)}">
+                        ${escapeHtml(order.note)}
+                    </div>
+                `;
             } else {
-                badge.classList.add("bg-secondary");
+                noteCell.innerHTML = '<span class="text-muted">—</span>';
             }
         }
 
-        orderCard.firstElementChild.classList.remove("border-danger", "border", "border-3");
-
-        console.log("Is order error?", order.status);
-        if (order.status === "Completed") {
-            console.log("Order completed, show success toast");
-            toastr.success(`Đơn hàng #${order.id} đã thanh toán thành công qua VNPAY!`, "💰 Đã nhận tiền");
+        const timeCell = orderRow.querySelector('.order-time .admin-table__mono');
+        if (timeCell && order.orderTime) {
+            timeCell.innerText = formatOrderTime(order.orderTime);
         }
+
+        const totalCell = orderRow.querySelector('.order-total .admin-table__amount');
+        if (totalCell && order.totalAmount !== undefined) {
+            totalCell.innerText = `${Number(order.totalAmount).toLocaleString()} đ`;
+        }
+
+        orderRow.classList.toggle('admin-row-alert', !!order.isError);
+
+        console.log('Updated order row for', order.id);
+    }
+
+    if (orderCard) {
+        const badge = orderCard.querySelector('.badge');
+        if (badge) {
+            badge.innerText = order.status;
+            badge.className = getOrderStatusBadgeClass(order.status);
+        }
+
+        if (orderCard.firstElementChild) {
+            orderCard.firstElementChild.classList.remove('border-danger', 'border', 'border-3');
+        }
+
+        if (order.status === 'Completed') {
+            toastr.success(`Đơn hàng #${order.id} đã thanh toán thành công qua VNPAY!`, '💰 Đã nhận tiền');
+        }
+    }
+
+    if (!orderRow && !orderCard && window.location.pathname.toLowerCase().startsWith('/orders')) {
+        location.reload();
     }
 });
 
@@ -245,9 +338,11 @@ orderConnection.on("OrderUpdated", function (order) {
 // ===============================
 orderConnection.on("OrderDeleted", function (orderId) {
 
-    const el = document.getElementById(`order-${orderId}`);
+    const card = document.getElementById(`order-${orderId}`);
+    const row = document.getElementById(`order-row-${orderId}`);
 
-    if (el) el.remove();
+    if (card) card.remove();
+    if (row) row.remove();
 });
 
 // ===============================

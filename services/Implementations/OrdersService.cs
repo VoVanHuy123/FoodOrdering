@@ -45,7 +45,12 @@ namespace FoodOrdering.services.Implementations
             await _hub.Clients.All.SendAsync("OrderUpdated", new
             {
                 id = order.Id,
-                status = order.Status
+                status = order.Status,
+                totalAmount = order.TotalAmount,
+                orderTime = order.OrderTime,
+                note = order.Note,
+                tableNumber = order.Table?.TableNumber,
+                isError = order.IsError
             });
 
             if (order.Table != null)
@@ -96,14 +101,13 @@ namespace FoodOrdering.services.Implementations
 
             // ===== PAGINATION =====
             var data = await orders
-                //.OrderByDescending(o => o.OrderTime)
-                .OrderBy(o =>
-        o.Status == "Preparing" ? 1 :
-        o.Status == "Pending" ? 2 :
-        o.Status == "Completed" ? 3 :
-        o.Status == "Cancelled" ? 4 : 5)
-                .ThenByDescending(o => o.OrderTime)
-                .ThenByDescending(o => o.UpdateTime)    // 2. UpdateTime
+                .OrderByDescending(o => o.OrderTime)
+                .ThenBy(o =>
+                    o.Status == "Preparing" ? 1 :
+                    o.Status == "Pending" ? 2 :
+                    o.Status == "Completed" ? 3 :
+                    o.Status == "Cancelled" ? 4 : 5)
+                .ThenByDescending(o => o.UpdateTime)
 
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
@@ -164,10 +168,14 @@ namespace FoodOrdering.services.Implementations
         //================== GET BY MENU ITEM ID =================
         public async Task UpdateOrdersUpdateTimeByMenuItemNotAvailableAsync(int menuItemId, bool isErrorUpdate)
         {
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+
             List<int> orderIds = new List<int>();
             var orders = await _context.Orders
                 .Where(o =>
-                    (o.Status == "Pending" || o.Status == "Preparing" && o.IsError == !isErrorUpdate) &&
+                    (o.Status == "Pending" || o.Status == "Preparing") && o.IsError == !isErrorUpdate 
+                    && o.OrderTime.Date == DateTime.Today &&
                     o.OrderItems.Any(i => i.MenuItemId == menuItemId)
                 )
                 .ToListAsync();
@@ -177,6 +185,11 @@ namespace FoodOrdering.services.Implementations
                 orderIds.Add(order.Id);
                 order.UpdateTime = DateTime.Now;
                 order.IsError = isErrorUpdate;
+            }
+
+            if (!orderIds.Any())
+            {
+                return;
             }
 
             await _context.SaveChangesAsync();
@@ -313,9 +326,13 @@ namespace FoodOrdering.services.Implementations
             await _context.SaveChangesAsync();
             await _hub.Clients.All.SendAsync("OrderUpdated", new
             {
-                order.Id,
-                order.Status,
-                order.TotalAmount
+                id = order.Id,
+                status = order.Status,
+                totalAmount = order.TotalAmount,
+                orderTime = order.OrderTime,
+                note = order.Note,
+                tableNumber = order.Table?.TableNumber,
+                isError = order.IsError
             });
             await _hub.Clients.All.SendAsync("TableOccupied", new
             {
@@ -461,7 +478,12 @@ namespace FoodOrdering.services.Implementations
             await _hub.Clients.All.SendAsync("OrderUpdated", new
             {
                 id = order.Id,
-                status = order.Status
+                status = order.Status,
+                totalAmount = order.TotalAmount,
+                orderTime = order.OrderTime,
+                note = order.Note,
+                tableNumber = order.Table?.TableNumber,
+                isError = order.IsError
             });
 
             await _context.SaveChangesAsync();

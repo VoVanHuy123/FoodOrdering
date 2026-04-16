@@ -3,7 +3,7 @@ namespace FoodOrdering.services.Interfaces
 {
     public interface IUsersService
     {
-        Task<List<UserDTO>> GetAllAsync();
+        Task<List<UserDTO>> GetAllAsync(UsersQuery? query = null);
         Task<UserDTO?> GetByIdAsync(int id);
 
         Task<UserDTO> CreateAsync(UserCreateDTO dto);
