@@ -1,78 +1,121 @@
-﻿@model List<FoodOrdering.DTOs.CategoryDTO>
-<style>
-.font_head{
-    font-family: "Playfair Display", Georgia, serif;
+﻿@using FoodOrdering.DTOs
+@model List<FoodOrdering.DTOs.CategoryDTO>
+@{
+    ViewData["Title"] = "Categories";
+    ViewData["FullWidth"] = true;
+    var query = ViewBag.Query as CategoriesQuery;
 }
-</style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
-<div class="container mt-2 mb-5">
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="font_head">Category Management</h3>
+<div class="admin-surface py-4">
+    <div class="container admin-page">
 
-        <button class="btn btn-success" onclick="showCreateBox()">
-            + Add Category
-        </button>
-    </div>
+        <header class="admin-page__header d-flex flex-column flex-md-row justify-content-md-between align-items-md-start gap-3">
+            <div>
+                <h1 class="admin-page__title">Categories</h1>
+                <p class="admin-page__meta mb-0">Manage your menu categories and filter by name.</p>
+            </div>
+            <button type="button" class="btn btn-admin-primary" onclick="showCreateBox()">
+                <i class="bi bi-plus-lg me-1"></i> Add category
+            </button>
+        </header>
 
-    <!-- CREATE BOX -->
-    <div id="createBox" class="mb-3" style="display:none;">
-        <input id="newName" class="form-control mb-2" placeholder="Category name..." />
-        <button class="btn btn-success" onclick="createCategory()">Create</button>
-    </div>
-
-    <div class="card shadow-lg border-0">
-        <div class="card-body p-0">
-
-            <table class="table table-hover align-middle mb-0">
-
-                <thead class="table-light">
-                    <tr>
-                        <th>Name</th>
-                        <th>Products</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var c in Model)
-                    {
-                        <tr id="row-@c.Id">
-
-                            <td>
-                                <span id="name-@c.Id">@c.Name</span>
-                                <input id="edit-@c.Id" class="form-control d-none" value="@c.Name" />
-                            </td>
-
-                            <td>@c.ProductCount</td>
-
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-outline-warning me-1"
-                                        onclick="edit(@c.Id)">
-                                    Edit
-                                </button>
-
-                                <button class="btn btn-sm btn-outline-danger"
-                                        onclick="deleteCate(@c.Id)">
-                                    Delete
-                                </button>
-                            </td>
-
-                        </tr>
-                    }
-                </tbody>
-
-            </table>
-
+        <div id="createBox" class="card mb-4 shadow-sm border admin-panel d-none">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="admin-toolbar__label mb-1">New category</label>
+                        <input id="newName" class="form-control" placeholder="Category name..." autocomplete="off" />
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-admin-primary w-100" onclick="createCategory()">
+                            Create
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
+        <form method="get" class="admin-toolbar">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4 col-lg-3">
+                    <div class="admin-toolbar__label">Category name</div>
+                    <input type="text"
+                           name="Name"
+                           value="@query?.Name"
+                           class="form-control"
+                           placeholder="Search category"
+                           autocomplete="off" />
+                </div>
+                <div class="col-md-2 col-lg-2">
+                    <button type="submit" class="btn btn-admin-primary w-100">
+                        <i class="bi bi-funnel me-1"></i> Apply
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <section class="admin-panel">
+            <div class="admin-panel__head">
+                <h2 class="admin-panel__title">Category list</h2>
+                <span class="small text-muted font-monospace">@Model.Count total</span>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="admin-table-wrap">
+                    <table class="table admin-table mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Products</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var category in Model)
+                            {
+                                <tr id="row-@category.Id">
+                                    <td>
+                                        <span id="name-@category.Id">@category.Name</span>
+                                        <input id="edit-@category.Id" class="form-control d-none mt-2" value="@category.Name" />
+                                    </td>
+                                    <td>@category.ProductCount</td>
+                                    <td class="text-end">
+                                        <div class="admin-actions justify-content-end">
+                                            <button type="button" class="admin-btn-icon" onclick="edit(@category.Id)">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <button type="button" class="admin-btn-icon admin-btn-icon--danger" onclick="deleteCate(@category.Id)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="admin-empty">
+                    <i class="bi bi-inbox d-block"></i>
+                    <p class="mb-0 fw-medium">No categories match your filter.</p>
+                    <p class="small mb-0 mt-1">Try clearing the keyword or create a new category.</p>
+                </div>
+            }
+        </section>
+
+    </div>
 </div>
 
 <script>
     function showCreateBox() {
-        document.getElementById("createBox").style.display = "block";
+        document.getElementById("createBox")?.classList.remove("d-none");
     }
 
     async function createCategory() {
@@ -91,18 +134,24 @@
         let span = document.getElementById("name-" + id);
         let input = document.getElementById("edit-" + id);
 
+        if (!input) return;
+
         if (input.classList.contains("d-none")) {
-            span.classList.add("d-none");
+            span?.classList.add("d-none");
             input.classList.remove("d-none");
+            input.focus();
         } else {
             save(id);
         }
     }
 
     async function save(id) {
-        let name = document.getElementById("edit-" + id).value;
+        let input = document.getElementById("edit-" + id);
+        if (!input) return;
 
-        await fetch(`/Categories/Edit?id=${id}&name=${name}`, {
+        let name = input.value;
+
+        await fetch(`/Categories/Edit?id=${id}&name=${encodeURIComponent(name)}`, {
             method: 'POST'
         });
 

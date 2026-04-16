@@ -85,14 +85,14 @@
             <div class="d-flex justify-content-between">
 
                 <a asp-action="Index"
-                       class="btn btn-outline-secondary">
+                       class="btn btn-admin-secondary">
                     ← Back
                 </a>
 
                 <div>
                     <a asp-action="Edit"
                            asp-route-id="@Model.Id"
-                           class="btn btn-warning">
+                           class="btn btn-admin-primary">
                         Edit
                     </a>
 					@if (User.IsInRole("Admin"))

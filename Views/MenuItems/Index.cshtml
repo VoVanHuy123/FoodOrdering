@@ -9,6 +9,9 @@
         ? (int)Math.Ceiling((double)Model.TotalItems / Model.PageSize)
         : 0;
 }
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
 
 <style>
     .menu-link {
@@ -56,6 +59,9 @@
     .font_head{
         font-family: "Playfair Display", Georgia, serif;
     }
+    .admin-btn{
+        background: #ca8a04;
+    }
 </style>
 @if (User.IsInRole("Admin"))
 {
@@ -63,16 +69,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class=" font_head">Menu manager</h2>
 
-            <div>
-                <a asp-action="Create" class="btn btn-success">
-                    + Create menu item
-                </a>
-                <a asp-controller="Categories"
-                       asp-action="Index"
-                       class="btn btn-success">
-                    + Categories
-                </a>
-            </div>
+            
             
         </div>
     </div>
@@ -102,11 +99,7 @@
                                 <a href="?CategoryId=@c.Id" class="menu-link">@c.Name</a>
                             </li>
                         }
-                        <li>
-                            <a href="/Categories" class="menu-link">
-                                 Manage Categories
-                            </a>
-                        </li>
+                       
                         
                     </ul>
                 </div>
@@ -118,7 +111,7 @@
                     <form method="get">
                         <div class="input-group">
                             <input name="Search" class="form-control" placeholder="Search..." />
-                            <button class="btn btn-warning">🔍</button>
+                            <button class="btn btn-warning text-white admin-btn"><i class="bi bi-search"></i></button>
                         </div>
                     </form>
                 </div>
@@ -132,8 +125,8 @@
 
                         <a asp-controller="MenuItems"
                                asp-action="Create"
-                               class="btn btn-warning w-100 fw-bold">
-                            ➕ Add Menu Item
+                               class="btn w-100 text-white fw-bold admin-btn">
+                            <i class="bi bi-plus-lg me-1"></i> Add Menu Item
                         </a>
 
                     </div>

@@ -1,6 +1,6 @@
 /* Admin / operations surfaces — see .cursor/rules/design_rule.md */
 
-.admin-surface {
+:root {
     --admin-bg: #f1f5f9;
     --admin-surface: #ffffff;
     --admin-border: #e2e8f0;
@@ -10,8 +10,15 @@
     --admin-accent-hover: #92400e;
     --admin-primary-btn: #ca8a04;
     --admin-primary-btn-hover: #a16207;
+    --admin-danger-btn: #dc3545;
+    --admin-danger-btn-hover: #b02a37;
+    --admin-secondary-btn: transparent;
+    --admin-secondary-text: #1f2937;
     --admin-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
     --admin-shadow-md: 0 4px 24px rgba(15, 23, 42, 0.08);
+}
+
+.admin-surface {
     background: var(--admin-bg);
     min-height: calc(100vh - 12rem);
 }
@@ -245,10 +252,37 @@
     border-radius: 8px;
 }
 
-    .btn-admin-primary:hover {
-        background: var(--admin-primary-btn-hover);
-        color: #fff !important;
-    }
+.btn-admin-primary:hover {
+    background: var(--admin-primary-btn-hover);
+    color: #fff !important;
+}
+
+.btn-admin-secondary {
+    background: var(--admin-secondary-btn);
+    color: var(--admin-secondary-text) !important;
+    border: 1px solid var(--admin-border);
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+}
+
+.btn-admin-secondary:hover {
+    background: rgba(203, 213, 225, 0.45);
+    color: var(--admin-secondary-text) !important;
+}
+
+.btn-admin-danger {
+    background: var(--admin-danger-btn);
+    border: none;
+    color: #fff !important;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+}
+
+.btn-admin-danger:hover {
+    background: var(--admin-danger-btn-hover);
+}
 
 .form-control:focus,
 .form-select:focus {

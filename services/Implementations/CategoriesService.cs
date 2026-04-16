@@ -16,9 +16,17 @@ namespace FoodOrdering.services.Implementations
         }
 
         // ================= GET ALL =================
-        public async Task<List<CategoryDTO>> GetAllAsync()
+        public async Task<List<CategoryDTO>> GetAllAsync(CategoriesQuery? query = null)
         {
-            return await _context.Categories
+            var categories = _context.Categories.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query?.Name))
+            {
+                var search = query.Name.Trim().ToLower();
+                categories = categories.Where(c => c.Name!.ToLower().Contains(search));
+            }
+
+            return await categories
                 .Select(c => new CategoryDTO
                 {
                     Id = c.Id,

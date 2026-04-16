@@ -118,6 +118,7 @@
                             <tr>
                                 <th scope="col">ID</th>
                                 <th scope="col">Table</th>
+                                <th scope="col">Note</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Time</th>
                                 <th scope="col" class="text-end">Total</th>
@@ -127,7 +128,7 @@
                         <tbody>
                             @foreach (var order in Model.Items)
                             {
-                                <tr class="@(order.IsError ? "admin-row-alert" : null)">
+                                <tr id="order-row-@order.Id" data-order-id="@order.Id" class="@(order.IsError ? "admin-row-alert" : null)">
                                     <td>
                                         <span class="admin-table__id">#@order.Id</span>
                                         @if (order.IsError)
@@ -135,17 +136,29 @@
                                             <span class="admin-badge admin-badge--error ms-1" title="Contains unavailable items">Stock</span>
                                         }
                                     </td>
-                                    <td>
+                                    <td class="order-table-number">
                                         <i class="bi bi-grid-3x3-gap text-muted me-1"></i>
                                         <span class="fw-medium">@order.TableNumber</span>
                                     </td>
-                                    <td>
+                                    <td class="order-note">
+                                        @if (!string.IsNullOrEmpty(order.Note))
+                                        {
+                                            <div class="small text-muted text-truncate" style="max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@order.Note">
+                                                @order.Note
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td class="order-status">
                                         <span class="@StatusBadgeClass(order.Status)">@(order.Status ?? "—")</span>
                                     </td>
-                                    <td>
+                                    <td class="order-time">
                                         <span class="admin-table__mono">@order.OrderTime.ToString("dd/MM/yyyy HH:mm")</span>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="order-total text-end">
                                         <span class="admin-table__amount">@order.TotalAmount.ToString("N0") đ</span>
                                     </td>
                                     <td class="text-end">
@@ -165,14 +178,6 @@
                                         </div>
                                     </td>
                                 </tr>
-                                @if (!string.IsNullOrEmpty(order.Note))
-                                {
-                                    <tr class="border-0">
-                                        <td colspan="6" class="pt-0 pb-3 small text-muted border-0">
-                                            <i class="bi bi-sticky me-1"></i>@order.Note
-                                        </td>
-                                    </tr>
-                                }
                             }
                         </tbody>
                     </table>

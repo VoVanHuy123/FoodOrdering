@@ -76,25 +76,25 @@ namespace FoodOrdering.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(OrderEditDTO dto)
         {
-            var order = new Orders
+            var menuItemPrices = await _context.MenuItems
+                .Where(m => dto.Items.Select(i => i.MenuItemId).Contains(m.Id))
+                .ToDictionaryAsync(m => m.Id, m => m.Price);
+
+            var orderDto = new OrderDTO
             {
                 TableId = dto.TableId,
                 OrderTime = DateTime.Now,
                 Status = dto.Status,
                 Note = dto.Note,
-                OrderItems = dto.Items.Select(i => new OrderItems
+                Items = dto.Items.Select(i => new OrderItemDTO
                 {
                     MenuItemId = i.MenuItemId,
-                    
                     Quantity = i.Quantity,
-                    Price = _context.MenuItems.First(m => m.Id == i.MenuItemId).Price
+                    Price = menuItemPrices.TryGetValue(i.MenuItemId, out var price) ? price : 0m
                 }).ToList()
             };
 
-            order.TotalAmount = order.OrderItems.Sum(i => i.Price * i.Quantity);
-
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
+            await _orderService.CreateAsync(orderDto);
 
             return RedirectToAction(nameof(Index));
         }

@@ -19,9 +19,10 @@
     
     <!-- Toastr -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
-
+    
     <style>
         :root {
             --cream: #fffbeb;
@@ -238,6 +239,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="~/js/orderHub.js"></script>
      <script src="~/js/notifyHub.js"></script> 
+     
 
     @await RenderSectionAsync("Scripts", required: false)
 

@@ -18,9 +18,10 @@ namespace FoodOrdering.Controllers
         // =====================
         // GET: Index
         // =====================
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(CategoriesQuery query)
         {
-            var data = await _service.GetAllAsync();
+            var data = await _service.GetAllAsync(query);
+            ViewBag.Query = query;
             return View(data);
         }
 

@@ -19,13 +19,14 @@ namespace FoodOrdering.Controllers
         // =====================
         // GET: Users
         // =====================
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(UsersQuery query)
         {
-            var users = await _userService.GetAllAsync();
+            var users = await _userService.GetAllAsync(query);
 
             if (users == null)
                 return Content("Users NULL");
 
+            ViewBag.Query = query;
             return View(users);
         }
 
