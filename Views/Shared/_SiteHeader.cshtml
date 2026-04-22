@@ -1,9 +1,18 @@
 @* Main navigation — shared across all pages *@
 <nav class="navbar navbar-expand-lg site-navbar border-bottom site-navbar-main">
     <div class="container">
-        <a class="navbar-brand site-brand fw-semibold" asp-controller="Home" asp-action="Index">
+        <!-- <a class="navbar-brand site-brand fw-semibold" asp-controller="Home" asp-action="Index">
+            <img src="/imgs/logo.png" alt="FoodOrdering" style="height: 80px;">
             FoodOrdering
-        </a>
+        </a> -->
+        <a class="navbar-brand d-flex align-items-center"
+   asp-controller="Home"
+   asp-action="Index">
+
+    <img src="~/favicon.ico" class="logo-img" />
+
+    <span class="logo-title">oodOrdering</span>
+</a>
 
         <button class="navbar-toggler site-nav-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#siteNavbarMenu" aria-controls="siteNavbarMenu" aria-expanded="false"
@@ -57,6 +66,11 @@
                         <li class="nav-item">
                             <a class="nav-link site-nav-link" asp-controller="Reports" asp-action="Index">
                                 Reports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link site-nav-link" asp-controller="Admin" asp-action="EditNetworkSettings">
+                                Network Settings
                             </a>
                         </li>
                     }
