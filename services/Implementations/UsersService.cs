@@ -69,6 +69,13 @@ namespace FoodOrdering.services.Implementations
         // =====================
         public async Task<UserDTO> CreateAsync(UserCreateDTO dto)
         {
+            // Kiểm tra username đã tồn tại hay chưa
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == dto.Username);
+
+            if (existingUser != null)
+                throw new InvalidOperationException($"Username '{dto.Username}' already exists.");
+
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
             var user = new Users
@@ -100,7 +107,18 @@ namespace FoodOrdering.services.Implementations
 
             if (user == null) return false;
 
+            // Kiểm tra nếu username thay đổi, có user khác dùng username mới không
+            if (user.Username != dto.Username)
+            {
+                var existingUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Username == dto.Username);
+
+                if (existingUser != null)
+                    return false; // Username đã tồn tại
+            }
+
             user.FullName = dto.FullName;
+            user.Username = dto.Username;
             user.Role = dto.Role;
 
             await _context.SaveChangesAsync();

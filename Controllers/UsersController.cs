@@ -61,7 +61,15 @@ namespace FoodOrdering.Controllers
             if (!ModelState.IsValid)
                 return View(dto);
 
-            await _userService.CreateAsync(dto);
+            try
+            {
+                await _userService.CreateAsync(dto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError("Username", ex.Message);
+                return View(dto);
+            }
 
             return RedirectToAction(nameof(Index));
         }
@@ -92,7 +100,17 @@ namespace FoodOrdering.Controllers
             var result = await _userService.UpdateAsync(id, dto);
 
             if (!result)
+            {
+                // Kiểm tra xem có tồn tại user khác với username này không (username duplicate)
+                var existingUser = await _userService.GetAllAsync(new UsersQuery { Name = dto.Username });
+                if (existingUser.Any(u => u.Id != id && u.Username == dto.Username))
+                {
+                    ModelState.AddModelError("Username", $"Username '{dto.Username}' already exists.");
+                    return View(dto);
+                }
+
                 return NotFound();
+            }
 
             return RedirectToAction(nameof(Index));
         }
