@@ -5,12 +5,14 @@ using FoodOrdering.Extentions;
 using FoodOrdering.Services.Interfaces;
 using FoodOrdering.Services.Implementations;
 using FoodOrdering.Hubs;
+using FoodOrdering.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using FoodOrdering.Settings;
+using Microsoft.AspNetCore.HttpOverrides;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +30,8 @@ builder.Services.AddDbContext<FoodOrderingContext>(options =>
     options.UseSqlServer(defaultConnection)
 );
 
+builder.Services.Configure<NetworkAccessSettings>(builder.Configuration.GetSection("NetworkAccess"));
+
 //CloudinarySettings
 builder.Services.Configure<CloudinarySettings>(options =>
 {
@@ -40,6 +44,7 @@ builder.Services.Configure<CloudinarySettings>(options =>
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplicationServices();
+builder.Services.AddScoped<FoodOrdering.Services.Implementations.NetworkAccessService>();
 builder.Services.AddSession();
 builder.Services.AddSignalR();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -110,12 +115,14 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// app.UseMiddleware<FoodOrdering.Middleware.NetworkAccessMiddleware>();
+
 app.UseSession();
 
 app.UseCors("AllowAll");
 
-app.UseAuthentication();   // ✅ SAU Routing
-app.UseAuthorization();    // ✅ SAU Authentication
+app.UseAuthentication();   // SAU Routing
+app.UseAuthorization();    // SAU Authentication
 
 app.MapControllers();
 
