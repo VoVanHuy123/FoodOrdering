@@ -8,6 +8,7 @@ namespace FoodOrdering.ControllerAPIs.API
 {
     [Route("api/categories")]
     [ApiController]
+    [AllowAnonymous]
     public class CategoriesControllerAPI : ControllerBase
     {
         private readonly ICategoriesService _service;

@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using FoodOrdering.Settings;
 using Microsoft.AspNetCore.HttpOverrides;
+using System.Text.Json;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,8 +63,8 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new AuthorizeFilter(policy));
 }).AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.PropertyNamingPolicy = null;
-}); ;
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
 
 // ===== Add Swagger =====
 builder.Services.AddEndpointsApiExplorer();

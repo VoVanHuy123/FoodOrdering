@@ -32,7 +32,7 @@ namespace FoodOrdering.services.Implementations
             await _context.SaveChangesAsync();
 
             // URL khách sẽ mở
-            var menuUrl = $"{_config["AppUrl"]}?tablesId={table.Id}";
+            var menuUrl = $"{_config["AppUrl"]}?tableId={table.Id}";
 
             // tạo QR
             var qrBytes = _cloudinaryService.GenerateQRCode(menuUrl);
@@ -57,7 +57,7 @@ namespace FoodOrdering.services.Implementations
         {
             var table = await _context.Tables.FindAsync(id);
 
-            var menuUrl = $"{_config["AppUrl"]}?tablesId={table.Id}";
+            var menuUrl = $"{_config["AppUrl"]}?tableId={table.Id}";
 
             // tạo QR
             var qrBytes = _cloudinaryService.GenerateQRCode(menuUrl);

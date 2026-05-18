@@ -36,7 +36,8 @@ namespace FoodOrdering.ControllerAPIs
             string vnp_TmnCode = Environment.GetEnvironmentVariable("VNPAY_TMN_CODE") ?? throw new InvalidOperationException("Missing VnpTmnCode configuration.");
             string vnp_HashSecret = Environment.GetEnvironmentVariable("VNPAY_HASH_SECRET") ?? throw new InvalidOperationException("Missing VnpHashSecret configuration.");
             string vnp_Url = Environment.GetEnvironmentVariable("VNPAY_BASE_URL") ?? throw new InvalidOperationException("Missing VnpBaseUrl configuration.");
-            string vnp_Returnurl = Environment.GetEnvironmentVariable("VNPAY_RETURN_URL") ?? throw new InvalidOperationException("Missing VnpReturnUrl configuration.");
+            string returnBase = Environment.GetEnvironmentVariable("VNPAY_RETURN_URL_BASE") ?? throw new InvalidOperationException("Missing VNPAY_RETURN_URL_BASE");
+            var vnp_Returnurl = $"{returnBase.TrimEnd('/')}/?tableId={order.TableId}";
 
             var vnp_Params = new SortedList<string, string>(new VnPayCompare())
             {

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrdering.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class CategoriesController : Controller
     {
         private readonly ICategoriesService _service;
