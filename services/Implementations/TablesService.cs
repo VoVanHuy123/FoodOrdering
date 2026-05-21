@@ -33,7 +33,7 @@ namespace FoodOrdering.services.Implementations
 
             // URL khách sẽ mở
             var menuUrl = $"{_config["AppUrl"]}?tablesId={table.Id}";
-
+        
             // tạo QR
             var qrBytes = _cloudinaryService.GenerateQRCode(menuUrl);
 
