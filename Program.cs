@@ -63,9 +63,11 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new AuthorizeFilter(policy));
 }).AddJsonOptions(options =>
 {
+
     // options.JsonSerializerOptions.PropertyNamingPolicy = null;
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 }); 
+
 
 // ===== Add Swagger =====
 builder.Services.AddEndpointsApiExplorer();
