@@ -32,7 +32,9 @@ namespace FoodOrdering.services.Implementations
             await _context.SaveChangesAsync();
 
             // URL khách sẽ mở
-            var menuUrl = $"{_config["AppUrl"]}?tableId={table.Id}";
+
+            var menuUrl = $"{_config["AppUrl"]}?tablesId={table.Id}";
+        
 
             // tạo QR
             var qrBytes = _cloudinaryService.GenerateQRCode(menuUrl);

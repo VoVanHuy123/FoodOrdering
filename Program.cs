@@ -24,13 +24,13 @@ var defaultConnection = Environment.GetEnvironmentVariable("DefaultConnection");
 var cloudName = Environment.GetEnvironmentVariable("CloudName");
 var cloudApiKey = Environment.GetEnvironmentVariable("CloudApiKey");
 var cloudApiSecret = Environment.GetEnvironmentVariable("CloudApiSecret");
-var appUrl = Environment.GetEnvironmentVariable("AppUrl");
-
+var appUrl = Environment.GetEnvironmentVariable("AppUrl") ?? "http://localhost:6000";
 // DbContext
 builder.Services.AddDbContext<FoodOrderingContext>(options =>
     options.UseSqlServer(defaultConnection)
 );
-
+builder.Configuration["AppUrl"] = appUrl;
+Console.WriteLine(builder.Configuration["AppUrl"]);
 builder.Services.Configure<NetworkAccessSettings>(builder.Configuration.GetSection("NetworkAccess"));
 
 //CloudinarySettings
@@ -63,8 +63,11 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new AuthorizeFilter(policy));
 }).AddJsonOptions(options =>
 {
+
+    // options.JsonSerializerOptions.PropertyNamingPolicy = null;
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-});
+}); 
+
 
 // ===== Add Swagger =====
 builder.Services.AddEndpointsApiExplorer();
