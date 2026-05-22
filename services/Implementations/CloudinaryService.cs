@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-using System.Drawing.Imaging;
-using CloudinaryDotNet;
+﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using FoodOrdering.services.Interfaces;
 using FoodOrdering.Settings;
@@ -51,18 +49,9 @@ namespace FoodOrdering.services.Implementations
         public byte[] GenerateQRCode(string url)
         {
             using var qrGenerator = new QRCodeGenerator();
-
             var data = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
-
-            var qrCode = new QRCode(data);
-
-            using Bitmap bitmap = qrCode.GetGraphic(20);
-
-            using MemoryStream ms = new MemoryStream();
-
-            bitmap.Save(ms, ImageFormat.Png);
-
-            return ms.ToArray();
+            var pngQrCode = new PngByteQRCode(data);
+            return pngQrCode.GetGraphic(20);
         }
         public async Task<string> UploadQR(byte[] imageBytes)
         {

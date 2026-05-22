@@ -153,9 +153,11 @@
                                     <span class="badge position-absolute top-0 end-0 m-3 @(item.IsAvailable ? "bg-success" : "bg-secondary")">@(item.IsAvailable ? "Available" : "Out of Stock")</span>
                                 </div>
                                 <img src="@(
-                                        string.IsNullOrEmpty(item.ImageUrl)
-                                            ? Url.Content("~/imgs/food.png")
-                                            : item.ImageUrl
+                                        !string.IsNullOrWhiteSpace(item.ImageUrl)
+                                        && (item.ImageUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                                            || item.ImageUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                                            ? item.ImageUrl
+                                            : Url.Content("~/imgs/food.png")
                                     )"
                                      class="card-img-top"
                                      style="height:200px; object-fit:cover;" />
@@ -163,7 +165,7 @@
                                 <div class="card-body text-center">
                                     <h6 class="fw-bold">@item.Name</h6>
                                     <p class="text-danger fw-bold">
-                                        $ @item.Price
+                                        @item.Price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) đ
                                     </p>
                                 </div>
                             </div>

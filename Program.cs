@@ -15,22 +15,23 @@ using FoodOrdering.Settings;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Text.Json;
 
-
-var builder = WebApplication.CreateBuilder(args);
-
 Env.Load(); // đọc biến từ file .env
 
 var defaultConnection = Environment.GetEnvironmentVariable("DefaultConnection");
 var cloudName = Environment.GetEnvironmentVariable("CloudName");
 var cloudApiKey = Environment.GetEnvironmentVariable("CloudApiKey");
 var cloudApiSecret = Environment.GetEnvironmentVariable("CloudApiSecret");
-var appUrl = Environment.GetEnvironmentVariable("AppUrl") ?? "http://localhost:6000";
+var appUrl = Environment.GetEnvironmentVariable("AppUrl") ?? "http://localhost:5111";
+var frontendUrl = Environment.GetEnvironmentVariable("FrontendUrl") ?? "http://localhost:5173";
+
+var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls(appUrl);
 // DbContext
 builder.Services.AddDbContext<FoodOrderingContext>(options =>
     options.UseSqlServer(defaultConnection)
 );
 builder.Configuration["AppUrl"] = appUrl;
-Console.WriteLine(builder.Configuration["AppUrl"]);
+builder.Configuration["FrontendUrl"] = frontendUrl;
 builder.Services.Configure<NetworkAccessSettings>(builder.Configuration.GetSection("NetworkAccess"));
 
 //CloudinarySettings

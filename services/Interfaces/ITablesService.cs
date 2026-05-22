@@ -11,5 +11,6 @@ namespace FoodOrdering.services.Interfaces
         Task<bool> UpdateTableAsync(int id, TableDTO dto);
         Task<TableDTO> GetByTableNameAsync(string tableName);
         Task<TableDTO> CreateTable(TableDTO table);
+        Task<TableEntryDTO> ValidateTableEntryAsync(int tableId);
     }
 }

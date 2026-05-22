@@ -33,7 +33,7 @@ namespace FoodOrdering.services.Implementations
 
             // URL khách sẽ mở
 
-            var menuUrl = $"{_config["AppUrl"]}?tablesId={table.Id}";
+            var menuUrl = $"{_config["FrontendUrl"]?.TrimEnd('/')}?tableId={table.Id}";
         
 
             // tạo QR
@@ -59,7 +59,7 @@ namespace FoodOrdering.services.Implementations
         {
             var table = await _context.Tables.FindAsync(id);
 
-            var menuUrl = $"{_config["AppUrl"]}?tableId={table.Id}";
+            var menuUrl = $"{_config["FrontendUrl"]?.TrimEnd('/')}?tableId={table.Id}";
 
             // tạo QR
             var qrBytes = _cloudinaryService.GenerateQRCode(menuUrl);
@@ -151,6 +151,49 @@ namespace FoodOrdering.services.Implementations
             //    throw new Exception("TableId không tồn tại");
             //}
 
+        }
+
+        public async Task<TableEntryDTO> ValidateTableEntryAsync(int tableId)
+        {
+            var table = await _context.Tables.FindAsync(tableId);
+            if (table == null)
+            {
+                return new TableEntryDTO
+                {
+                    CanEnter = false,
+                    Message = "Không tìm thấy bàn."
+                };
+            }
+
+            var dto = new TableDTO
+            {
+                Id = table.Id,
+                TableNumber = table.TableNumber,
+                Status = table.Status,
+                QRCode = table.QRCode
+            };
+
+            if (!string.Equals(table.Status, "Available", StringComparison.OrdinalIgnoreCase))
+            {
+                return new TableEntryDTO
+                {
+                    CanEnter = false,
+                    Message = table.Status switch
+                    {
+                        "Occupied" => "Bàn đang có khách. Vui lòng liên hệ nhân viên.",
+                        "Reserved" => "Bàn đã được đặt trước.",
+                        _ => $"Bàn không khả dụng (trạng thái: {table.Status})."
+                    },
+                    Table = dto
+                };
+            }
+
+            return new TableEntryDTO
+            {
+                CanEnter = true,
+                Message = "OK",
+                Table = dto
+            };
         }
 
         public async Task<bool> UpdateTableAsync(int id, TableDTO dto)
