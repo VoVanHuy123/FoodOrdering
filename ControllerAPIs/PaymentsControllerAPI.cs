@@ -88,7 +88,73 @@ namespace FoodOrdering.ControllerAPIs
             return Ok("Payment created");
         }
 
+        [HttpGet("vnpay/callback")]
+        public async Task<IActionResult> VnPayCallback()
+        {
+            string vnp_HashSecret = Environment.GetEnvironmentVariable("VNPAY_HASH_SECRET") ?? throw new InvalidOperationException("Missing VnpHashSecret configuration.");
 
+            var vnpayData = HttpContext.Request.Query;
+            var vnp_Params = new SortedList<string, string>(new VnPayCompare());
+
+            foreach (var key in vnpayData.Keys)
+            {
+                if (!string.IsNullOrEmpty(key) && key.StartsWith("vnp_"))
+                {
+                    vnp_Params.Add(key, vnpayData[key].ToString());
+                }
+            }
+
+            if (!vnp_Params.ContainsKey("vnp_SecureHash"))
+            {
+                return BadRequest("Missing secure hash");
+            }
+
+            string vnp_SecureHash = vnp_Params["vnp_SecureHash"];
+            vnp_Params.Remove("vnp_SecureHash");
+            vnp_Params.Remove("vnp_SecureHashType");
+
+            // Build raw data to calculate hash
+            StringBuilder data = new();
+            foreach (KeyValuePair<string, string> kv in vnp_Params)
+            {
+                if (!string.IsNullOrEmpty(kv.Value))
+                {
+                    data.Append(WebUtility.UrlEncode(kv.Key) + "=" + WebUtility.UrlEncode(kv.Value) + "&");
+                }
+            }
+            string queryString = data.ToString().TrimEnd('&');
+
+            // Verify signature
+            var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(vnp_HashSecret));
+            byte[] hashValue = hmac.ComputeHash(Encoding.UTF8.GetBytes(queryString));
+            string checkHash = Convert.ToHexStringLower(hashValue);
+
+            if (!string.Equals(checkHash, vnp_SecureHash, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest("Invalid signature");
+            }
+
+            string responseCode = vnp_Params.GetValueOrDefault("vnp_ResponseCode");
+            if (responseCode == "00")
+            {
+                string txnRef = vnp_Params.GetValueOrDefault("vnp_TxnRef");
+                if (string.IsNullOrEmpty(txnRef)) return BadRequest("Missing TxnRef");
+
+                int orderId = int.Parse(txnRef.Split('_')[0]);
+
+                // Create payment (sẽ tự động cập nhật đơn hàng thành Completed và bàn thành Available)
+                var result = await _paymentService.CreatePaymentAsync(new PaymentDTO
+                {
+                    OrderId = orderId,
+                    PaymentMethod = "VNPAY",
+                    Status = "Success"
+                });
+
+                return Ok(new { success = true, message = "Thanh toán thành công" });
+            }
+
+            return BadRequest("Thanh toán thất bại");
+        }
     }
 
         public class VnPayRequest { public int OrderId { get; set; } }

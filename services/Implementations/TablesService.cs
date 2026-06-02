@@ -177,12 +177,12 @@ namespace FoodOrdering.services.Implementations
             {
                 return new TableEntryDTO
                 {
-                    CanEnter = false,
+                    CanEnter = false,   
                     Message = table.Status switch
                     {
-                        "Occupied" => "Bàn đang có khách. Vui lòng liên hệ nhân viên.",
-                        "Reserved" => "Bàn đã được đặt trước.",
-                        _ => $"Bàn không khả dụng (trạng thái: {table.Status})."
+                        "Occupied" => "Bàn số " + dto.TableNumber + " đang có khách. Vui lòng liên hệ nhân viên.",
+                        "Reserved" => "Bàn số " + dto.TableNumber + " đã được đặt trước.",
+                        _ => $"Bàn số " + dto.TableNumber + " không khả dụng (trạng thái: {table.Status})."
                     },
                     Table = dto
                 };

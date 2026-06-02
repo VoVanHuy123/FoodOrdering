@@ -1,4 +1,4 @@
-﻿using FoodOrdering.Context;
+using FoodOrdering.Context;
 using FoodOrdering.DTOs;
 using FoodOrdering.Models;
 using FoodOrdering.services.Interfaces;
@@ -44,6 +44,9 @@ namespace FoodOrdering.Services.Implementations
 
             _context.Payments.Add(payment);
             await _context.SaveChangesAsync();
+
+            // Tự động cập nhật trạng thái đơn hàng thành Completed (đồng thời giải phóng bàn sang Available)
+            await _ordersService.UpdateOrderStatusAsync(dto.OrderId, "Completed");
 
             return true;
         }
